@@ -319,20 +319,20 @@ hayPokeDeTipo t (p:ps) = esMismoTipo t (tipoDe p) || hayPokeDeTipo t ps
     una lista de personas con diferente rol. La de?nición es la siguiente:
 -}
 data Seniority = Junior | SemiSenior | Senior
+    deriving Show
 data Proyecto = ConsProyecto String
+    deriving Show
 data Rol = Developer Seniority Proyecto | Management Seniority Proyecto
+    deriving Show
 data Empresa = ConsEmpresa [Rol]
+    deriving Show
 
 
 
-
-
-
-
-proy1 = ConsProyecto "Proy A"
-proy2 = ConsProyecto "Proy B"
-proy3 = ConsProyecto "Proy C"
-proy4 = ConsProyecto "Proy D"
+proy1 = ConsProyecto "Proy 1"
+proy2 = ConsProyecto "Proy 2"
+proy3 = ConsProyecto "Proy 3"
+proy4 = ConsProyecto "Proy 4"
 
 rol1 = Developer Junior proy1
 rol2 = Management Senior proy2
@@ -362,8 +362,12 @@ cantQueTrabajanEn [proy1, proy2, proy3, proy4] empresa--> 4
 cantQueTrabajanEn [proy1, proy2] empresa --> 3
 cantQueTrabajanEn [proy1, proy2, proy3, proy4] empresaSeniors --> 3
 
+---------------------------------------------------------------------------------------------------------------------
 
-
+asignadosPorProyecto empresa ---> [(proy1, 2), (proy2, 1), (proy3, 1)]
+asignadosPorProyecto empresaSinRepetidos ---> [(proy1, 2), (proy2, 1), (proy3, 1)]
+asignadosPorProyecto empresaConRepetidos ---> [(proy1, 2)]
+asignadosPorProyecto empresaSeniors ---> [(proy1, 2), (proy2, 1)]
 
 -}
 
@@ -446,7 +450,26 @@ cantQueTrabajanEn' ps (r:rs) = unoSiCeroSino (elProyectoPertenece (elProyectoDe 
 
 
 -- Devuelve una lista de pares que representa a los proyectos (sin repetir) junto con su cantidad de personas involucradas.
---asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
+asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
+asignadosPorProyecto (ConsEmpresa rs) = cantPorProyecto rs
+
+
+cantPorProyecto :: [Rol] -> [(Proyecto, Int)]
+cantPorProyecto   []   = []
+cantPorProyecto (r:rs) = sumarUnoEn (elProyectoDe r) (cantPorProyecto rs)
+
+
+sumarUnoEn :: Proyecto -> [(Proyecto, Int)] -> [(Proyecto, Int)]
+sumarUnoEn p   []   = [(p, 1)]
+sumarUnoEn p (t:ts) = if esTuplaDeMismoProy p t then (sumarUno t) : ts
+                                                else t : sumarUnoEn p ts
+
+esTuplaDeMismoProy :: Proyecto -> (Proyecto, Int) -> Bool
+esTuplaDeMismoProy p1 (p2, _ ) = esMismoProyecto p1 p2
+
+sumarUno :: (Proyecto, Int) -> (Proyecto, Int)
+sumarUno (p, n) = (p, n+1)
+
 
 
 
