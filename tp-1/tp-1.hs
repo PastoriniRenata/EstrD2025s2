@@ -44,7 +44,7 @@ data Dir = Norte | Sur | Este | Oeste
 
 opuesto :: Dir -> Dir
 opuesto Norte = Sur
-opuesta Sur = Norte
+opuesto Sur = Norte
 opuesto Este = Oeste
 opuesto _ = Este
 
@@ -184,7 +184,7 @@ edad (P _ e) = e
 
 -- Aumenta en uno la edad de la persona.
 crecer :: Persona -> Persona
-crecer (P n e) = P n e+1
+crecer (P n e) = P n (e+1)
 
 
 
@@ -207,8 +207,8 @@ laQueEsMayor p1 p2 = if esMayorQueLaOtra p1 p2 then p1 else p2
 
 
 -- VERSION SIN USAR AUXILIAR
-laQueEsMayor :: Persona -> Persona -> Persona
-laQueEsMayor (P n1 e1) (P n2 e2) = if e1 > e2 then (P n1 e1) else (P n2 e2)
+--laQueEsMayor :: Persona -> Persona -> Persona
+--laQueEsMayor p1 p2 = if edad p1 > edad p2 then p1 else p2
 
 
 
@@ -277,7 +277,7 @@ unoSiEsMismoTipo    _     _    = 0
 
 --Dado un par de entrenadores, devuelve a sus Pokémon en una lista.
 juntarPokemon :: (Entrenador, Entrenador) -> [Pokemon]
-juntarPokemon (ConsEntrenador _ p1 p2) (ConsEntrenador _ p3 p4) = [p1, p2, p3, p4]
+juntarPokemon ((ConsEntrenador _ p1 p2), (ConsEntrenador _ p3 p4)) = [p1, p2, p3, p4]
 
 
 --FUNCIONES POLIMORFICAS
