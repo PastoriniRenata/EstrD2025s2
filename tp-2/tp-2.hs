@@ -49,7 +49,7 @@ apariciones e (x:xs) = unoSiCeroSino (e==x) + apariciones e xs
 --FUNCION AUXILIAR TRANSFORMA BOOLEANOS EN NROS
 unoSiCeroSino :: Bool -> Int
 unoSiCeroSino True = 1
-unoSiCeroSino   _  = 0
+unoSiCeroSino   _  = 0 
 
 
 
@@ -385,26 +385,52 @@ nombreDelProy (ConsProyecto n) = n
 -- Definir las siguientes funciones sobre el tipo Empresa:
 
 -- Dada una empresa denota la lista de proyectos en los que trabaja, sin elementos repetidos.
+{-
+    proyectos :: Empresa -> [Proyecto]
+    proyectos (ConsEmpresa rs) = losProyectos rs
+
+    -- FUNCIONES AUXILIARES
+    losProyectos :: [Rol] -> [Proyecto]
+    losProyectos rs = deNombresAProyectos (sinRepetidos (losNombresDeLosProyectos rs))
+
+    losNombresDeLosProyectos :: [Rol] -> [String]
+    losNombresDeLosProyectos [] = []
+    losNombresDeLosProyectos (r:rs) = nombreDelProy (elProyectoDe r) : losNombresDeLosProyectos rs
+
+    sinRepetidos :: Eq a => [a] -> [a]
+    sinRepetidos   []   = []
+    sinRepetidos (x:xs) = if pertenece x xs 
+                                then sinRepetidos xs
+                                else x: sinRepetidos xs
+
+    deNombresAProyectos :: [String] -> [Proyecto]
+    deNombresAProyectos   []   = []
+    deNombresAProyectos (n:ns) = (ConsProyecto n) : deNombresAProyectos ns
+-}
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 proyectos :: Empresa -> [Proyecto]
 proyectos (ConsEmpresa rs) = losProyectos rs
 
 -- FUNCIONES AUXILIARES
 losProyectos :: [Rol] -> [Proyecto]
-losProyectos rs = deNombresAProyectos (sinRepetidos (losNombresDeLosProyectos rs))
+losProyectos   []   = []
+losProyectos (r:rs) = let proyectosSinRepetidos = losProyectos rs
+                            in 
+                                if elProyectoPertenece (elProyectoDe r) proyectosSinRepetidos
+                                    then proyectosSinRepetidos
+                                    else elProyectoDe r : proyectosSinRepetidos
+    
 
-losNombresDeLosProyectos :: [Rol] -> [String]
-losNombresDeLosProyectos [] = []
-losNombresDeLosProyectos (r:rs) = nombreDelProy (elProyectoDe r) : losNombresDeLosProyectos rs
+--FUNCIONES AUXILIARES
+elProyectoPertenece :: Proyecto -> [Proyecto] -> Bool
+--PROPOSITO: Dado un proyecto indica si pertenece a la lista de proyectos dada
+elProyectoPertenece x   []   = False
+elProyectoPertenece x (p:ps) = esMismoProyecto x p || elProyectoPertenece x ps
 
-sinRepetidos :: Eq a => [a] -> [a]
-sinRepetidos   []   = []
-sinRepetidos (x:xs) = if pertenece x xs 
-                            then sinRepetidos xs
-                            else x: sinRepetidos xs
+esMismoProyecto :: Proyecto -> Proyecto -> Bool
+--PROPOSITO: dados dos proyectos, indica si son el mismo
+esMismoProyecto p1 p2 = nombreDelProy p1 == nombreDelProy p2
 
-deNombresAProyectos :: [String] -> [Proyecto]
-deNombresAProyectos   []   = []
-deNombresAProyectos (n:ns) = (ConsProyecto n) : deNombresAProyectos ns
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -418,12 +444,7 @@ losSenior :: [Rol] -> [Proyecto] -> Int
 losSenior   []   ps = 0
 losSenior (r:rs) ps = unoSiCeroSino (esDevSenior r &&  elProyectoPertenece (elProyectoDe r) ps) + losSenior rs ps
 
-elProyectoPertenece :: Proyecto -> [Proyecto] -> Bool
-elProyectoPertenece x   []   = False
-elProyectoPertenece x (p:ps) = esMismoProyecto x p || elProyectoPertenece x ps
 
-esMismoProyecto :: Proyecto -> Proyecto -> Bool
-esMismoProyecto p1 p2 = nombreDelProy p1 == nombreDelProy p2
 
 esDevSenior :: Rol -> Bool
 esDevSenior (Developer s _)  = esSenior s
