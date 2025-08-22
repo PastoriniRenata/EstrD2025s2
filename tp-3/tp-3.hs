@@ -270,7 +270,7 @@ tree_7 :: Tree Int
 tree_1 = NodeT 1 (NodeT 2  (NodeT 3 (EmptyT) 
                                       (NodeT 4 (EmptyT) 
                                                 (NodeT 5 (NodeT 6 (EmptyT) 
-                                                                    (EmptyT)) 
+                                                                  (EmptyT)) 
                                                           (EmptyT)))) 
                             (EmptyT)) 
                   (NodeT 7  (EmptyT)
@@ -333,24 +333,49 @@ sizeT (NodeT x t1 t2)  = 1 + sizeT t2 + sizeT t2
 
 -- Dado un árbol de enteros devuelve un árbol con el doble de cada número.
 mapDobleT :: Tree Int -> Tree Int
+mapDobleT     EmptyT       = EmptyT
+mapDobleT (NodeT x t1 t2)  = NodeT (x*2) (mapDobleT t1) (mapDobleT t2)
 
 
-
-{-
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Dados un elemento y un árbol binario devuelve True si existe un elemento igual a ese en el árbol.
 perteneceT :: Eq a => a -> Tree a -> Bool
+perteneceT x     EmptyT       = False
+perteneceT x (NodeT y t1 t2)  = x==y || perteneceT x t1 || perteneceT x t2
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Dados un elemento e y un árbol binario devuelve la cantidad de elementos del árbol que son iguales a e.
 aparicionesT :: Eq a => a -> Tree a -> Int
+aparicionesT x     EmptyT       = 0
+aparicionesT x (NodeT y t1 t2)  = unoSiCeroSino (x==y) + aparicionesT x t1 + aparicionesT x t2
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Dado un árbol devuelve los elementos que se encuentran en sus hojas.
 -- NOTA: en este tipo se de?ne como hoja a un nodo con dos hijos vacíos
 leaves :: Tree a -> [a]
+leaves     EmptyT       = []
+leaves (NodeT y t1 t2)  = if esEmpty t1 && esEmpty t2
+                                then [y]
+                                else leaves t1 ++ leaves t2
+
+
+esEmpty :: Tree a -> Bool
+esEmpty EmptyT = True
+esEmpty    _   = False
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Dado un árbol devuelve su altura.
 -- Nota: la altura de un árbol (height en inglés), también llamada profundidad, es la cantidad de niveles del árbol1. La altura para EmptyT es 0, y para una hoja es 1.
 heightT :: Tree a -> Int
+heightT 
+heightT 
+
+
+
+{-
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Dado un árbol devuelve el árbol resultante de intercambiar el hijo izquierdo con el derecho, en cada nodo del árbol.
 mirrorT :: Tree a -> Tree a

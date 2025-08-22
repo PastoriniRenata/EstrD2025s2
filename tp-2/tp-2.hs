@@ -382,44 +382,25 @@ nombreDelProy (ConsProyecto n) = n
  
 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Definir las siguientes funciones sobre el tipo Empresa:
 
 -- Dada una empresa denota la lista de proyectos en los que trabaja, sin elementos repetidos.
-{-
-    proyectos :: Empresa -> [Proyecto]
-    proyectos (ConsEmpresa rs) = losProyectos rs
-
-    -- FUNCIONES AUXILIARES
-    losProyectos :: [Rol] -> [Proyecto]
-    losProyectos rs = deNombresAProyectos (sinRepetidos (losNombresDeLosProyectos rs))
-
-    losNombresDeLosProyectos :: [Rol] -> [String]
-    losNombresDeLosProyectos [] = []
-    losNombresDeLosProyectos (r:rs) = nombreDelProy (elProyectoDe r) : losNombresDeLosProyectos rs
-
-    sinRepetidos :: Eq a => [a] -> [a]
-    sinRepetidos   []   = []
-    sinRepetidos (x:xs) = if pertenece x xs 
-                                then sinRepetidos xs
-                                else x: sinRepetidos xs
-
-    deNombresAProyectos :: [String] -> [Proyecto]
-    deNombresAProyectos   []   = []
-    deNombresAProyectos (n:ns) = (ConsProyecto n) : deNombresAProyectos ns
--}
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 proyectos :: Empresa -> [Proyecto]
 proyectos (ConsEmpresa rs) = losProyectos rs
 
 -- FUNCIONES AUXILIARES
 losProyectos :: [Rol] -> [Proyecto]
 losProyectos   []   = []
-losProyectos (r:rs) = let proyectosSinRepetidos = losProyectos rs
-                            in 
-                                if elProyectoPertenece (elProyectoDe r) proyectosSinRepetidos
-                                    then proyectosSinRepetidos
-                                    else elProyectoDe r : proyectosSinRepetidos
-    
+losProyectos (r:rs) = agregarSiNoPertenece (elProyectoDe r) (losProyectos rs)
+
+
+agregarSiNoPertenece :: Proyecto -> [Proyecto] --agrega el proyecto al final en caso de no encontrarlo
+agregarSiNoPertenece p ps = if elProyectoPertenece p ps
+                                        then ps
+                                        else p : ps
+
+
 
 --FUNCIONES AUXILIARES
 elProyectoPertenece :: Proyecto -> [Proyecto] -> Bool
