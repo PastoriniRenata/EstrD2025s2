@@ -268,7 +268,7 @@ tree_6 :: Tree Int
 tree_7 :: Tree Int
 
 tree_1 = NodeT 1 (NodeT 2  (NodeT 3 (EmptyT) 
-                                      (NodeT 4 (EmptyT) 
+                                    (NodeT 4 (EmptyT) 
                                                 (NodeT 5 (NodeT 6 (EmptyT) 
                                                                   (EmptyT)) 
                                                           (EmptyT)))) 
@@ -279,7 +279,10 @@ tree_1 = NodeT 1 (NodeT 2  (NodeT 3 (EmptyT)
 tree_2 = EmptyT
 tree_3 = NodeT 10 (NodeT 10 (EmptyT) (EmptyT)) (EmptyT)
 tree_4 = NodeT "hola" (NodeT "chau" (EmptyT) (EmptyT)) (EmptyT)
-tree_5 = NodeT "Hola" (NodeT "Mundo" EmptyT EmptyT) (NodeT "Hola" EmptyT EmptyT)
+tree_5 = NodeT "Hola" (NodeT "Mundo" EmptyT EmptyT) 
+                      (NodeT "Hola" EmptyT EmptyT)
+
+
 tree_6 = NodeT 10 (EmptyT)(EmptyT)
 
 
@@ -316,6 +319,32 @@ arbol_1_prueba = (NodeT 1 (NodeT 2 (NodeT 3 (NodeT 4 (EmptyT)
                                             (NodeT 4 (NodeT 5 (EmptyT)
                                                               (EmptyT))
                                                      (EmptyT)))))
+
+arbol_toList_Ordenado = (NodeT 0 (NodeT 5 (NodeT 3 (NodeT 2 (NodeT 1 EmptyT EmptyT) 
+                                                             EmptyT)
+                                                   (NodeT 4 EmptyT EmptyT))
+                                          (NodeT 6 EmptyT EmptyT))
+
+                                 (NodeT 8 (NodeT 7 EmptyT
+                                                   EmptyT)
+                                          (NodeT 9 EmptyT
+                                                   (NodeT 10 EmptyT
+                                                             EmptyT))))
+                                 
+
+{-
+                                                       0
+                                                     /  \
+                                                    5    8
+                                                   /\    /\
+                                                  3  6  7  9
+                                                 /\         \
+                                                2  4        10
+                                               /
+                                              1
+-}
+
+
 
 
 -- Dado un árbol binario de enteros devuelve la suma entre sus elementos.
@@ -370,27 +399,55 @@ esEmpty    _   = False
 -- Dado un árbol devuelve su altura.
 -- Nota: la altura de un árbol (height en inglés), también llamada profundidad, es la cantidad de niveles del árbol1. La altura para EmptyT es 0, y para una hoja es 1.
 heightT :: Tree a -> Int
-heightT 
-heightT 
+heightT     EmptyT       = 0
+heightT (NodeT y t1 t2)  = 1 + max (heightT t1) (heightT t2)
 
-
-
-{-
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Dado un árbol devuelve el árbol resultante de intercambiar el hijo izquierdo con el derecho, en cada nodo del árbol.
 mirrorT :: Tree a -> Tree a
+mirrorT     EmptyT       = EmptyT
+mirrorT (NodeT y t1 t2)  = NodeT y (mirrorT t2) (mirrorT t1)
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Dado un árbol devuelve una lista que representa el resultado de recorrerlo en modo in-order.
 -- Nota: En el modo in-order primero se procesan los elementos del hijo izquierdo, luego la raiz y luego los elementos del hijo derecho.
 toList :: Tree a -> [a]
+toList     EmptyT       = []
+toList (NodeT y t1 t2)  = toList t1 ++ y :  toList t2
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Dados un número n y un árbol devuelve una lista con los nodos de nivel n. El nivel de un nodo es la distancia que hay de la raíz hasta él. La distancia de la raiz a sí misma es 0, y la distancia de la raiz a uno de sus hijos es 1.
+-- Dados un número n y un árbol devuelve una lista con los nodos de nivel n. El nivel de un nodo es la distancia que hay de la raíz hasta él. La distancia de la raiz a sí misma es 0, y 
+-- la distancia de la raiz a uno de sus hijos es 1.
 -- Nota: El primer nivel de un árbol (su raíz) es 0.
 levelN :: Int -> Tree a -> [a]
+levelN 0        t         = elementoActual t
+levelN n      EmptyT      = []
+levelN n (NodeT y t1 t2)  = levelN (n-1) t1 ++ levelN (n-1) t2
+
+elementoActual :: Tree a -> [a]
+-- proposito: devuelve el elemento del nivel actual en una lista, en caso de ser empty, devuelve una lista vacía
+elementoActual     EmptyT       = []
+elementoActual (NodeT y t1 t2)  = [y]
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Dado un árbol devuelve una lista de listas en la que cada elemento representa un nivel de dicho árbol.
 listPerLevel :: Tree a -> [[a]]
+listPerLevel     EmptyT       = []
+listPerLevel (NodeT y t1 t2)  = agregarElementoEnCadaLista y (listPerLevel t1 ++ listPerLevel t2)
+
+agregarElementoEnCadaLista :: a -> [[a]] -> [[a]]
+agregarElementoEnCadaLista x   []   = [[x]]
+agregarElementoEnCadaLista x (l:ls) = (x:l) : agregarElementoEnCadaLista x ls
+
+--CREO Q ESTA ES LA SOLUCION DE EL DE ABAJO
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+{-
 -- Devuelve los elementos de la rama más larga del árbol
 ramaMasLarga :: Tree a -> [a]
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
