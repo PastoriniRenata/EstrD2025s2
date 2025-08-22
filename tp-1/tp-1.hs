@@ -140,7 +140,7 @@ Nota: no viene implementada en Haskell.
 -}
 implica :: Bool -> Bool -> Bool
 implica True b  = b
-implica False _ = True
+implica  _   _  = True
 
 {-
 Dados dos booleanos si ambos son True devuelve True, sino devuelve False.
@@ -149,7 +149,7 @@ En Haskell ya está definida como \&\&.
 -}
 yTambien :: Bool -> Bool -> Bool
 yTambien True b  = b
-yTambien False _ = False
+yTambien   _  _  = False
 
 
 {-Dados dos booleanos si alguno de ellos es True devuelve True, sino devuelve False.
@@ -158,8 +158,7 @@ En Haskell ya está definida como ||.
 -}
 oBien :: Bool -> Bool -> Bool
 oBien True  _ = True
-oBien False b = b
-
+oBien    _  b = b
 
 
 
