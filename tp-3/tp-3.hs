@@ -432,24 +432,31 @@ elementoActual (NodeT y t1 t2)  = [y]
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Dado un árbol devuelve una lista de listas en la que cada elemento representa un nivel de dicho árbol.
 listPerLevel :: Tree a -> [[a]]
-listPerLevel     EmptyT       = []
-listPerLevel (NodeT y t1 t2)  = agregarElementoEnCadaLista y (listPerLevel t1 ++ listPerLevel t2)
+listPerLevel t = listasPorNivel t (heightT t - 1)
 
-agregarElementoEnCadaLista :: a -> [[a]] -> [[a]]
-agregarElementoEnCadaLista x   []   = [[x]]
-agregarElementoEnCadaLista x (l:ls) = (x:l) : agregarElementoEnCadaLista x ls
-
---CREO Q ESTA ES LA SOLUCION DE EL DE ABAJO
-
+listasPorNivel :: Tree a -> Int -> [[a]]
+listasPorNivel t 0 =  [levelN 0 t]
+listasPorNivel t n =  [levelN n t] ++ listasPorNivel t (n-1)
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-{-
 -- Devuelve los elementos de la rama más larga del árbol
 ramaMasLarga :: Tree a -> [a]
+ramaMasLarga      EmptyT     = []
+ramaMasLarga (NodeT x t1 t2) = x : laMasLarga (ramaMasLarga t1) (ramaMasLarga t2)
+
+
+laMasLarga :: [a] -> [a] -> [a]
+-- Devuelve la lista más larga de las 2 listas dadas
+laMasLarga xs ys = if longitud xs > longitud ys 
+                        then xs
+                        else ys
+
+longitud :: [a] -> Int
+longitud []       = 0
+longitud (_ : xs) = 1 + longitud xs
+
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 {-
     Dado un árbol devuelve todos los caminos, es decir, los caminos desde la raíz hasta cualquiera de los nodos.
@@ -464,6 +471,16 @@ ramaMasLarga :: Tree a -> [a]
     ésta para devolver solamente los caminos maximales.
 -}
 todosLosCaminos :: Tree a -> [[a]]
+todosLosCaminos     EmptyT       = []
+todosLosCaminos (NodeT y t1 t2)  = agregarElementoEnCadaLista y (todosLosCaminos t1 ++ todosLosCaminos t2)
+
+agregarElementoEnCadaLista :: a -> [[a]] -> [[a]]
+agregarElementoEnCadaLista x   []   = [[x]]
+agregarElementoEnCadaLista x (l:ls) = (x:l) : agregarElementoEnCadaLista x ls
+
+
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 {-
     2.2.Expresiones Aritméticas
@@ -477,14 +494,69 @@ data ExpA = Valor Int
 
 -- Dada una expresión aritmética devuelve el resultado evaluarla.
 eval :: ExpA -> Int
+eval (Valor n )        = n 
+eval (Sum   exp1 exp2) = eval exp1 + eval exp2
+eval (Prod  exp1 exp2) = eval exp1 * eval exp2
+eval (Neg   exp1)      = - eval exp1
 
-{-
-    Dada una expresión aritmética, la simpli?ca según los siguientes criterios (descritos utilizando notación matemática convencional):
-    a) 0 + x = x + 0 = x
-    b) 0 * x = x * 0 = 0
-    c) 1 * x = x * 1 = x
-    d) - (- x) = x
--}
+nro1 = Valor 1
+nro2 = Valor 2
+nro3 = Sum nro1 nro2   -- 1 + 2 = 3
+nro4 = Prod nro2 nro3  -- 2 * 3 = 6
+nro5 = Neg nro4        -- = -6 
+
+-- Dada una expresión aritmética, la simplifica según los siguientes criterios (descritos utilizando
+-- notación matemática convencional):
+-- a) 0 + x = x + 0 = x
+-- b) 0 * x = x * 0 = 0
+-- c) 1 * x = x * 1 = x
+-- d) - (- x) = x
+
+
+nro6  = Neg nro5 -- = 6
+nro7  = Neg nro6 -- = -6
+nro8  = Prod nro4 nro7 -- 6 * -6 = -36
+nro9  = Sum nro8 nro4 -- -36 + 6 = -30
+nro10 = Sum nro9 (Neg nro8) -- -30 + -(-36) = -30 + 36 = 6
+
+nro11 = Valor 1                     -- >  1              ---- simplificar --->                                     --rta--> Valor 1                      
+nro12 = Valor 0                     -- >  0              ---- simplificar --->                                     --rta--> Valor 0             
+nro13 = Sum nro11 nro12             -- >  1              ---- simplificar ---> nro11 + nro12 = 1 + 0 = 1 = nro11   --rta--> Valor 1  
+nro14 = Prod nro12 nro13            -- >  0              ---- simplificar ---> Prod nro12 nro13 = 0 * 1            --rta--> Valor 0               
+nro15 = Sum nro13 nro14             -- >  1              ---- simplificar ---> Sum nro13 nro14 = 1 + 0 = nro13     --rta--> Valor 1
+nro16 = Neg (Neg nro15)             -- > -(-1) = 1       ---- simplificar ---> Neg(Neg nro15)                      --rta--> Valor 1
+
+
+nro17 = Valor 2                        -- >  2              ---- simplificar --rta--> Valor 2                      
+nro18 = Valor 3                        -- >  3              ---- simplificar --rta--> Valor 3             
+nro19 = Sum nro17 nro18                -- >  5              ---- simplificar --rta--> Sum (Valor 2) (Valor 3)
+nro20 = Prod nro18 nro19               -- >  15             ---- simplificar --rta--> Prod (Valor 3) (Sum (Valor 2) (Valor 3))         
+nro21 = Sum nro19 nro20                -- >  20             ---- simplificar --rta--> Sum (Sum (Valor 2) (Valor 3)) (Prod (Valor 3) (Sum (Valor 2) (Valor 3)))
+nro22 = Neg (Neg nro21)                -- > -(-20) = 20     ---- simplificar --rta--> Sum    (Sum (Valor 2) (Valor 3))     (Prod (Valor 3) (Sum (Valor 2) (Valor 3)))
+nro23 = Neg (Neg (Neg (Valor 2)))      -- > - (-(-2)) = -2 ---- simplificar --rta--> Neg (Valor 2)
+nro24 = Neg (Prod (Neg nro18) nro19 )  -- >  -(- 15) = 15   ---- simplificar --rta--> Neg (Prod (Neg (Valor 3)) (Sum (Valor 2) (Valor 3))) ???      
+nro25 = Sum (Sum (Valor 2) (Valor 3))  (Prod (Valor 0) (Sum (Valor 2) (Valor 3))) -- >  = 5      ---- simplificar --rta--> Sum (Valor 2) (Valor 3))
+                                                                    
+
 simplificar :: ExpA -> ExpA
+simplificar (Sum exp1 exp2)   = simplificarSuma (simplificar exp1) (simplificar exp2)
+simplificar (Prod exp1 exp2)  = simplificarProducto (simplificar exp1) (simplificar exp2)
+simplificar (Neg exp)         = simplificarNeg (simplificar exp)
+simplificar exp               = exp
 
--}
+simplificarSuma :: ExpA -> ExpA -> ExpA
+simplificarSuma (Valor 0) exp2 = exp2
+simplificarSuma exp1 (Valor 0) = exp1
+simplificarSuma exp1 exp2      = Sum exp1 exp2
+
+simplificarProducto :: ExpA -> ExpA -> ExpA
+simplificarProducto (Valor 0) _    = Valor 0
+simplificarProducto _ (Valor 0)    = Valor 0
+simplificarProducto (Valor 1) exp2 = exp2
+simplificarProducto exp1 (Valor 1) = exp1
+simplificarProducto exp1 exp2      = Prod exp1 exp2
+
+simplificarNeg :: ExpA -> ExpA
+simplificarNeg (Neg exp) = exp
+simplificarNeg exp = Neg exp
+
