@@ -365,7 +365,7 @@ cantQueTrabajanEn [proy1, proy2, proy3, proy4] empresaSeniors --> 3
 ---------------------------------------------------------------------------------------------------------------------
 
 asignadosPorProyecto empresa ---> [(proy1, 2), (proy2, 1), (proy3, 1)]
-asignadosPorProyecto empresaSinRepetidos ---> [(proy1, 2), (proy2, 1), (proy3, 1)]
+asignadosPorProyecto empresaSinRepetidos ---> [(proy1, 1), (proy2, 1), (proy3, 1)]
 asignadosPorProyecto empresaConRepetidos ---> [(proy1, 2)]
 asignadosPorProyecto empresaSeniors ---> [(proy1, 2), (proy2, 1)]
 
@@ -394,15 +394,11 @@ losProyectos :: [Rol] -> [Proyecto]
 losProyectos   []   = []
 losProyectos (r:rs) = agregarSiNoPertenece (elProyectoDe r) (losProyectos rs)
 
-
-agregarSiNoPertenece :: Proyecto -> [Proyecto] --agrega el proyecto al final en caso de no encontrarlo
+agregarSiNoPertenece :: Proyecto -> [Proyecto] -> [Proyecto] --agrega el proyecto al final en caso de no encontrarlo
 agregarSiNoPertenece p ps = if elProyectoPertenece p ps
                                         then ps
                                         else p : ps
 
-
-
---FUNCIONES AUXILIARES
 elProyectoPertenece :: Proyecto -> [Proyecto] -> Bool
 --PROPOSITO: Dado un proyecto indica si pertenece a la lista de proyectos dada
 elProyectoPertenece x   []   = False
@@ -411,6 +407,20 @@ elProyectoPertenece x (p:ps) = esMismoProyecto x p || elProyectoPertenece x ps
 esMismoProyecto :: Proyecto -> Proyecto -> Bool
 --PROPOSITO: dados dos proyectos, indica si son el mismo
 esMismoProyecto p1 p2 = nombreDelProy p1 == nombreDelProy p2
+
+{-
+COSTO
+esMismoProyecto --> O(1)
+elProyectoPertenece --> O(P), donde P es la cantidad de proyectos NO REPETIDOS de la empresa
+agregarSiNoPertenece --> O(P), por utilizar elProyectoPertenece
+elProyectoDe --> O(1)
+
+losProyectos --> O(R * P), ya que por cada Rol de la empresa se utiliza la funcion agregarSiNoPertenece, la cual tiene costo O(P)
+
+
+
+-}
+
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -473,7 +483,15 @@ sumarUno :: (Proyecto, Int) -> (Proyecto, Int)
 sumarUno (p, n) = (p, n+1)
 
 
-
+{-
+P: es la cantidad de proyectos distintos en la empresa
+R: cantidad de roles en la empresa
+sumarUno --> O(1) 
+esTuplaDeMismoProy --> O(1)
+sumarUnoEn --> Como la lista de tuplas, en peor caso, hay una tupla por cada proyecto distinto en la empresa y se hace un paso recursivo por tupla en la lista --> O(P)
+cantPorProyecto --> en cada paso recursivo se urilizan elProyectoDe O(1) y sumarUnoEn O(P), se hacen R pasos recursivos --> O(R * P)
+asignadosPorProyecto --> O(R * P)
+-}
 
 
 
