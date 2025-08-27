@@ -139,7 +139,7 @@ Esta función NO debe realizar doble pattern matching.
 Nota: no viene implementada en Haskell.
 -}
 implica :: Bool -> Bool -> Bool
-implica False _  = False
+implica False _  = True
 implica  _    b  = b
 
 {-
