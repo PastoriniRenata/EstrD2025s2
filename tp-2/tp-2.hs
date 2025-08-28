@@ -180,11 +180,11 @@ esMayorA (P _ e) n = e>n
 
 
 
--- Dada una lista de personas devuelve el promedio de edad entre esas personas. Precondición: la lista al menos posee una persona.
+-- Dada una lista de personas devuelve el promedio de edad entre esas personas. 
 promedioEdad :: [Persona] -> Int
-promedioEdad [] = 0
+--Precondición: la lista al menos posee una persona.
+promedioEdad [] = error "No hay personas en la lista"
 promedioEdad ps = div (sumatoriaEdades ps) (longitud ps)
-
 
 -- FUNCION AUXILIAR
 sumatoriaEdades :: [Persona] -> Int
