@@ -235,6 +235,8 @@ entr_6 = ConsEntrenador "F" [poke_1, poke_2, poke_6]
 tipoDe :: Pokemon -> TipoDePokemon
 tipoDe (ConsPokemon t _) = t
 
+losPokesDe :: Entrenador -> [Pokemon]
+losPokesDe (ConsEntrenador _ pks) = pks
 
 
 -- Como puede observarse, ahora los entrenadores tienen una cantidad de Pokemon arbitraria.
@@ -270,7 +272,7 @@ esMismoTipo    _      _   = False
 
 -- Dados dos entrenadores, indica la cantidad de Pokemon de cierto tipo pertenecientes al primer entrenador, que le ganarían a todos los Pokemon del segundo entrenador.
 cuantosDeTipo_De_LeGananATodosLosDe_ :: TipoDePokemon -> Entrenador -> Entrenador -> Int
-cuantosDeTipo_De_LeGananATodosLosDe_ t (ConsEntrenador _ pks1) (ConsEntrenador _ pks2) = cuantosDe_De_LeGananATodosLosDe_ t pks1 pks2
+cuantosDeTipo_De_LeGananATodosLosDe_ t e1 e2 = cuantosDe_De_LeGananATodosLosDe_ t (losPokesDe e1) (losPokesDe e2)
  
 --FUNCIONES AUXILIARES
 cuantosDe_De_LeGananATodosLosDe_ :: TipoDePokemon -> [Pokemon] -> [Pokemon] -> Int

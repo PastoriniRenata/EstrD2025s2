@@ -1,52 +1,144 @@
 -- 1. Pizzas
 -- Tenemos los siguientes tipos de datos:
 data Pizza = Prepizza
-        | Capa Ingrediente Pizza
-
+            | Capa Ingrediente Pizza
+    deriving Show
 data Ingrediente = Salsa
                    | Queso
                    | Jamon
                    | Aceitunas Int
+    deriving Show
+
 
 -- EJEMPLOS
-pizza1 = Capa Queso(Capa Jamon(Capa (Aceitunas 8)(Capa Queso(Capa Jamon(Capa Queso(Capa Queso(Capa Queso (Capa Jamon Prepizza))))))))
+pizza1 = Capa Queso(Capa Jamon(Capa (Aceitunas 8)(Capa Salsa(Capa Jamon(Capa Queso(Capa Queso(Capa Queso (Capa Jamon Prepizza))))))))
 pizza2 = Capa Jamon Prepizza
-pizza3 = Capa Queso(Capa Jamon Prepizza)
+pizza3 = Capa Salsa(Capa Jamon Prepizza)
+pizza4 = Capa Salsa(Capa Queso (Capa Salsa(Capa Queso Prepizza)))
 
 --Denir las siguientes funciones:
 
 
 --Dada una pizza devuelve la cantidad de ingredientes
 cantidadDeCapas :: Pizza -> Int
+cantidadDeCapas Prepizza   = 0
+cantidadDeCapas (Capa i p) = 1 +  cantidadDeCapas p
 
+{-
+cantidadDeCapas pizza1 --> 9
+cantidadDeCapas pizza2 --> 1
+cantidadDeCapas pizza3 --> 2
+-}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Dada una lista de ingredientes construye una pizza
 armarPizza :: [Ingrediente] -> Pizza
+armarPizza   []   = Prepizza
+armarPizza (i:is) = Capa i (armarPizza is)
 
+{-
+armarPizza [] --> Prepizza
+armarPizza [Salsa,Queso,Queso,Jamon,Queso,Queso,Jamon,(Aceitunas 8)] --> Capa Salsa (Capa Queso (Capa Queso (Capa Jamon (Capa Queso (Capa Queso (Capa Jamon (Capa (Aceituna 8) Prepizza)))))))
+armarPizza [Jamon] -> Capa Jamon Prepizza
+-}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Le saca los ingredientes que sean jamón a la pizza
 sacarJamon :: Pizza -> Pizza
+sacarJamon  Prepizza  = Prepizza
+sacarJamon (Capa i p) = if esJamon i
+                            then sacarJamon p
+                            else Capa i (sacarJamon p)
+
+
+esJamon :: Ingrediente -> Bool
+esJamon Jamon = True
+esJamon   _   = False
+
+{-
+pizza1 = Capa Queso(Capa Jamon(Capa (Aceitunas 8)(Capa Salsa(Capa Jamon(Capa Queso(Capa Queso(Capa Queso (Capa Jamon Prepizza))))))))
+sacarJamon pizza1 --> Capa Queso (Capa (Aceitunas 8) (Capa Salsa (Capa Queso (Capa Queso (Capa Queso Prepizza)))))
+                      Capa Queso (Capa (Aceitunas 8) (Capa Salsa (Capa Queso (Capa Queso (Capa Queso Prepizza)))))
+
+pizza2 = Capa Jamon Prepizza
+sacarJamon pizza2 --> Prepizza
+
+
+pizza3 = Capa Queso(Capa Jamon Prepizza)
+sacarJamon pizza3 --> Capa Salsa Prepizza
+
+-}
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Dice si una pizza tiene solamente salsa y queso (o sea, no tiene de otros ingredientes. En
 --particular, la prepizza, al no tener ningún ingrediente, debería dar verdadero.)
 tieneSoloSalsaYQueso :: Pizza -> Bool
+tieneSoloSalsaYQueso  Prepizza  = True
+tieneSoloSalsaYQueso (Capa i c) = esSalsaOQueso i && tieneSoloSalsaYQueso c
 
 
+esSalsaOQueso :: Ingrediente -> Bool
+esSalsaOQueso Salsa = True
+esSalsaOQueso Queso = True
+esSalsaOQueso   _   = False
 
+{-
+tieneSoloSalsaYQueso pizza1 --> False
+tieneSoloSalsaYQueso pizza2 --> False 
+tieneSoloSalsaYQueso pizza3 --> False
+tieneSoloSalsaYQueso pizza4 --> True
+
+-}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Recorre cada ingrediente y si es aceitunas duplica su cantidad
 duplicarAceitunas :: Pizza -> Pizza
+duplicarAceitunas  Prepizza  = Prepizza
+duplicarAceitunas (Capa i c) = if esAceituna i
+                                    then Capa (duplicarLaCantidad i) (duplicarAceitunas c)
+                                    else Capa i (duplicarAceitunas c)
+
+
+--FUNCION AUXILIAR
+esAceituna :: Ingrediente -> Bool
+esAceituna (Aceitunas _ ) = True
+esAceituna      _        = False
+
+
+duplicarLaCantidad :: Ingrediente -> Ingrediente
+-- Proposito: Dado un ingrediente de tipo aceituna, devuelve el mismo duplicando su cantidad
+-- Precondicion: el ingrediente dado debe ser de tipo Aceituna
+duplicarLaCantidad (Aceitunas n) = Aceitunas (n*2)
+duplicarLaCantidad      _       = error"NO SON ACEITUNAS"
+
+
+
+{-
+duplicarAceitunas pizza1 --> Capa Queso (Capa Jamon (Capa (Aceitunas 16) (Capa Salsa (Capa Jamon (Capa Queso (Capa Queso (Capa Queso (Capa Jamon Prepizza))))))))
+duplicarAceitunas pizza2 --> Capa Jamon Prepizza
+duplicarAceitunas pizza3 --> Capa Salsa(Capa Jamon Prepizza)
+duplicarAceitunas pizza4 --> Capa Salsa(Capa Queso (Capa Salsa(Capa Queso Prepizza)))
+
+-}
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Dada una lista de pizzas devuelve un par donde la primera componente es la cantidad de
 --ingredientes de la pizza, y la respectiva pizza como segunda componente.
 cantCapasPorPizza :: [Pizza] -> [(Int, Pizza)]
+cantCapasPorPizza   []   = []
+cantCapasPorPizza (p:ps) = (cantidadDeCapas p, p) : cantCapasPorPizza ps
+
+{-
+cantCapasPorPizza [pizza1, pizza2, pizza3, pizza4] --> [(9 , Capa Queso(Capa Jamon(Capa (Aceitunas 8)(Capa Salsa(Capa Jamon(Capa Queso(Capa Queso(Capa Queso (Capa Jamon Prepizza))))))))),
+                                                        (1 , Capa Jamon Prepizza),
+                                                        (2 , Capa Salsa(Capa Jamon Prepizza)),
+                                                        (4 , Capa Salsa(Capa Queso (Capa Salsa(Capa Queso Prepizza))))]
+                                                       
+                                                       
+
+-}
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -56,22 +148,31 @@ cantCapasPorPizza :: [Pizza] -> [(Int, Pizza)]
 --cada cofre tiene un objeto, que puede ser chatarra o un tesoro.
 
 data Dir = Izq | Der
+    deriving Show
 data Objeto = Tesoro | Chatarra
+    deriving Show
 data Cofre = Cofre [Objeto]
+    deriving Show
 data Mapa = Fin Cofre
-                | Bifurcacion Cofre Mapa Mapa
+          | Bifurcacion Cofre Mapa Mapa
+    deriving Show
 
 
-{-
-hayTesoro mapa_1 --> True
-hayTesoro mapa_2 --> False
-hayTesoro mapa_3 --> True
-hayTesoro mapa_4 --> True
-hayTesoro mapa_5 --> False
--}
+--FUNCIONES OBSERVADORAS
+objetosDel :: Cofre -> [Objeto]
+objetosDel (Cofre objs) = objs
+
+
+cofreActual :: Mapa -> Cofre
+cofreActual       (Fin c )       = c          
+cofreActual (Bifurcacion c _ _ ) = c                
+
+
 mapa_1 = (Bifurcacion (Cofre [Chatarra, Chatarra,Chatarra]) (Bifurcacion (Cofre [Chatarra, Chatarra]) (Fin (Cofre [Chatarra]))
                                                                                                       (Fin (Cofre [Chatarra, Tesoro])))      
                                                             (Fin (Cofre [Chatarra, Tesoro])))
+
+
 {-
                                                 Cofre [Chatarra, Chatarra,Chatarra]
                                                  /                             \
@@ -80,15 +181,10 @@ mapa_1 = (Bifurcacion (Cofre [Chatarra, Chatarra,Chatarra]) (Bifurcacion (Cofre 
                                      /             \                                   
                                     /               \                                  
                         Cofre [Chatarra]         Cofre [Chatarra, Tesoro] 
-
 -} 
-
-
-
 mapa_2 = (Bifurcacion (Cofre [Chatarra, Chatarra,Chatarra]) (Bifurcacion (Cofre [Chatarra, Chatarra]) (Fin (Cofre [Chatarra]))
                                                                                                       (Fin (Cofre [Chatarra])))      
                                                             (Fin (Cofre [Chatarra])))
-
 {-NO TIENE TESOROS
                                                 Cofre [Chatarra, Chatarra,Chatarra]
                                                  /                             \
@@ -98,16 +194,11 @@ mapa_2 = (Bifurcacion (Cofre [Chatarra, Chatarra,Chatarra]) (Bifurcacion (Cofre 
                                     /               \                                  
                         Cofre [Chatarra]         Cofre [Chatarra] 
 -}
-
 mapa_3 = (Bifurcacion (Cofre [Chatarra, Chatarra,Tesoro,Chatarra]) (Bifurcacion (Cofre [Chatarra, Chatarra]) (Fin (Cofre [Chatarra]))
                                                                                                              (Fin (Cofre [Chatarra, Tesoro])))      
                                                                    (Fin (Cofre [Chatarra, Tesoro])))
-
 mapa_4 = (Fin (Cofre [Chatarra, Tesoro]))
-
 mapa_5 = (Fin (Cofre []))
-
-
 mapa_6 = (Bifurcacion (Cofre [Chatarra, Chatarra,Chatarra]) (Bifurcacion (Cofre [Chatarra, Chatarra]) (Fin (Cofre [Chatarra]))
                                                                                                       (Fin (Cofre [Chatarra, Tesoro])))      
                                                             (Fin (Cofre [Chatarra, Chatarra])))
@@ -119,13 +210,9 @@ mapa_6 = (Bifurcacion (Cofre [Chatarra, Chatarra,Chatarra]) (Bifurcacion (Cofre 
                                      /             \                                   
                                     /               \                                  
                      Fin Cofre [Chatarra]        Fin Cofre [Chatarra, Tesoro] 
-
 caminoAlTesoro mapa_6 --> [Izq, Der]
-
 -} 
 mapa_7 = Bifurcacion (Cofre []) (Fin (Cofre [])) (Fin (Cofre []))
-
-
 mapa_8 = (Bifurcacion (Cofre [Chatarra, Chatarra,Tesoro,Chatarra]) (Fin (Cofre [Chatarra, Tesoro]))
                                                                    (Bifurcacion (Cofre [Chatarra, Chatarra]) (Fin (Cofre [Chatarra]))
                                                                                                              (Fin (Cofre [Chatarra, Tesoro]))) )     
@@ -134,31 +221,150 @@ mapa_8 = (Bifurcacion (Cofre [Chatarra, Chatarra,Tesoro,Chatarra]) (Fin (Cofre [
 --Denir las siguientes operaciones:
 --Indica si hay un tesoro en alguna parte del mapa.
 hayTesoro :: Mapa -> Bool
+hayTesoro      (Fin c)          = existeTesoro c
+hayTesoro (Bifurcacion c m1 m2) = existeTesoro c || hayTesoro m1 || hayTesoro m2
 
+
+--FUNCIONES AUXILIARES
+existeTesoro :: Cofre -> Bool
+existeTesoro c = hayTesoroEnList (objetosDel c)
+
+
+hayTesoroEnList :: [Objeto] -> Bool
+hayTesoroEnList   []   = False
+hayTesoroEnList (o:os) = esTesoro o || hayTesoroEnList os
+
+esTesoro :: Objeto -> Bool
+esTesoro Tesoro = True
+esTesoro    _   = False
+
+{-
+hayTesoro mapa_1 --> True
+hayTesoro mapa_2 --> False
+hayTesoro mapa_3 --> True
+hayTesoro mapa_4 --> True
+hayTesoro mapa_5 --> False
+-}
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---Indica si al nal del camino hay un tesoro. Nota: el nal de un camino se representa con una
+--Indica si al final del camino hay un tesoro. Nota: el final de un camino se representa con una
 --lista vacía de direcciones.
 hayTesoroEn :: [Dir] -> Mapa -> Bool
+hayTesoroEn   []              m           =  existeTesoro (cofreActual m)
+hayTesoroEn (d:ds)        (Fin c )        =  existeTesoro c
+hayTesoroEn (d:ds)  (Bifurcacion _ m1 m2) = if esIzquierda d
+                                                then hayTesoroEn ds m1
+                                                else hayTesoroEn ds m2
 
+--FUNCIONES AUXILIARES
+esIzquierda :: Dir -> Bool
+esIzquierda Izq = True
+esIzquierda  _  = False
 
+{-
+hayTesoroEn [Izq,Der] mapa_1            --> True
+hayTesoroEn [Der] mapa_1                --> True
+hayTesoroEn [Izq, Izq, Izq, Izq] mapa_2 --> False //EL MAPA LLEGA A FIN ALTES DE QUE SE TERMINE LA LISTA
+hayTesoroEn [] mapa_3                   --> True
+hayTesoroEn [Der, Der] mapa_4           --> True
+-}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Indica el camino al tesoro. Precondición: existe un tesoro y es único.
 caminoAlTesoro :: Mapa -> [Dir]
+caminoAlTesoro mapa = if existeTesoro (cofreActual mapa) --Si el tesoro esta en el paso actual, devuelve la lista vacía
+                            then []
+                            else let direccion = direccionAlTesoro mapa
+                                 in
+                                    direccion : caminoAlTesoro (mapaEnDireccion direccion mapa)
 
 
+--FUNCIONES AUXILIARES
+direccionAlTesoro :: Mapa -> Dir
+-- Dado un mapa, describe en que direccion de sus bifurcaciones hay un tesoro
+-- PRECONDICION: existe un tesoro y es único
+direccionAlTesoro      (Fin _ )          = error "NO HAY TESORO EN EL MAPA ACTUAL" -- si hubiera tesoro en el Fin, debería haber entrado en la linea 270 en el then
+direccionAlTesoro (Bifurcacion c m1 m2) = if hayTesoro m1
+                                                then Izq
+                                                else Der
+
+mapaEnDireccion :: Dir -> Mapa -> Mapa
+--Proposito: dada una direccion y un mapa, devuelve el mapa en la direccion dada
+-- PRECONDICION: Existe un siguiente mapa (osea q no es fin)
+mapaEnDireccion Izq (Bifurcacion c m1 _) = m1
+mapaEnDireccion Der (Bifurcacion c _ m2) = m2
+mapaEnDireccion  _  (Fin _ )             = error"NO HAY SIGUIENTE MAPA"
+
+
+{-
+
+caminoAlTesoro mapa_4 --> [] // xq está en el primer paso que 
+caminoAlTesoro mapa_5 --> ERROR, no hay tesoro
+caminoAlTesoro mapa_6 --> [Izq, Der]
+
+-}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Indica el camino de la rama más larga.
 caminoDeLaRamaMasLarga :: Mapa -> [Dir]
+caminoDeLaRamaMasLarga      (Fin _ )         = []
+caminoDeLaRamaMasLarga (Bifurcacion c m1 m2) = 
+                let (dir, mapa) = dirYRamaMasLarga m1 m2
+                    in    dir : caminoDeLaRamaMasLarga mapa
+
+
+--FUNCIONES AUXILIARES
+dirYRamaMasLarga :: Mapa -> Mapa -> (Dir, Mapa)
+-- Dados dos mapas, devuelve una tupla con el mapa mas largo y la direccion en la que está ubicado respecto a su padre (Izq si el primer mapa es mas largo que el segundo, y Der en caso contrario)
+-- OBS/Precondicion?? : m1 y m2 son mapas hijos de una bifurcación
+dirYRamaMasLarga m1 m2 = if elMapaEsMasLargo m1 m2
+                                then (Izq, m1)
+                                else (Der, m2)
+
+elMapaEsMasLargo :: Mapa -> Mapa -> Bool
+-- Dados dos mapas, indica si el primer mapa es mas largo que el segundo
+elMapaEsMasLargo m1 m2 = longitudMapa m1 > longitudMapa m2
+
+longitudMapa :: Mapa -> Int
+longitudMapa     (Fin _)            = 0
+longitudMapa (Bifurcacion _ m1 m2)  = 1 + max (longitudMapa m1) (longitudMapa m2)
+
+
+{-
+caminoDeLaRamaMasLarga mapa_1 --> [Izq, Der]
+caminoDeLaRamaMasLarga mapa_2 --> [Izq, Der]
+caminoDeLaRamaMasLarga mapa_4 --> []
+caminoDeLaRamaMasLarga mapa_7 --> [Izq]
+caminoDeLaRamaMasLarga mapa_8 --> [Der, Der]
+-}
 
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Devuelve los tesoros separados por nivel en el árbol.
 tesorosPorNivel :: Mapa -> [[Objeto]]
+tesorosPorNivel         (Fin c)       = [losTesorosDe c]
+tesorosPorNivel (Bifurcacion c m1 m2) = let
+                                            (x:tesorosm1) = tesorosPorNivel m1
+                                            (y:tesorosm2) = tesorosPorNivel m2
+                                                in losTesorosDe c : (x++y) : tesorosm1 ++ tesorosm2
+
+--estrategia: unifico la primera lista de cada recursion (osea los del mismo nivel)
+
+
+
+--FUNCIONES AUXILIARES
+losTesorosDe :: Cofre -> [Objeto]
+losTesorosDe (Cofre objs) = losTesorosEn objs
+
+losTesorosEn :: [Objeto] -> [Objeto]
+losTesorosEn   []   = []
+losTesorosEn (o:os) = if esTesoro o
+                            then o : losTesorosEn os
+                            else losTesorosEn os
+
+
 
 {-
 tesorosPorNivel mapa_1 --> [[],[Tesoro],[Tesoro]]
@@ -169,11 +375,46 @@ tesorosPorNivel mapa_6 --> [[],[],[Tesoro]]
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Devuelve todos lo caminos en el mapa.
 todosLosCaminos :: Mapa -> [[Dir]]
+todosLosCaminos         (Fin _)       = []
+todosLosCaminos (Bifurcacion _ m1 m2) = agregarEnTodas Izq (todosLosCaminos m1) ++ agregarEnTodas Der (todosLosCaminos m2) 
+
+--FUNCIONES AUXILIARES
+agregarEnTodas :: a -> [[a]] -> [[a]]
+agregarEnTodas x  []   = [[x]]
+agregarEnTodas x (l:ls) = (x:l) : agregarEnTodas x ls
 
 
+{-
+todosLosCaminos mapa_1 --> [[Izq,Izq],[Izq,Der],[Der],[Izq]]
+todosLosCaminos mapa_4 --> []
+todosLosCaminos mapa_7 --> [[Izq],[Der]]
+todosLosCaminos mapa_8 --> [[Izq],[Der],[Der,Izq],[Der,Der]]
+-}
 
 
+--VERSION CAMINOS MAXIMALES
+todosLosCaminosMaximales :: Mapa -> [[Dir]]
+todosLosCaminosMaximales         (Fin _)       = [[]]
+todosLosCaminosMaximales (Bifurcacion _ m1 m2) = agregarElementoAdelanteDeTodas Izq (todosLosCaminosMaximales m1) ++ agregarElementoAdelanteDeTodas Der (todosLosCaminosMaximales m2) 
 
+--FUNCIONES AUXILIARES
+agregarElementoAdelanteDeTodas :: a -> [[a]] -> [[a]]
+agregarElementoAdelanteDeTodas _   []   = []
+agregarElementoAdelanteDeTodas x (l:ls) = (x:l) : agregarElementoAdelanteDeTodas x ls
+
+{-
+todosLosCaminosMaximales mapa_1 --> [[Izq,Izq],[Izq,Der],[Der]]
+todosLosCaminosMaximales mapa_4 --> [[]]
+todosLosCaminosMaximales mapa_7 --> [[Izq],[Der]]
+todosLosCaminosMaximales mapa_8 --> [[Izq],[Der,Izq],[Der,Der]]
+-}
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+{-
 --Nave Espacial
 --modelaremos una Nave como un tipo algebraico, el cual nos permite construir una nave espacial,
 --dividida en sectores, a los cuales podemos asignar tripulantes y componentes. La representación
@@ -482,4 +723,5 @@ cazadoresSuperioresDe "I" manada3 = ["H", "A"]
 cazadoresSuperioresDe "H" manada3 = ["A"]
 cazadoresSuperioresDe "E" manada3 = ["A"]
 cazadoresSuperioresDe "L" manada3 = ["K","H", "A"]
+-}
 -}
