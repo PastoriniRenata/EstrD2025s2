@@ -100,9 +100,12 @@ zipMaximos (x:xs) (y:ys) = if x>y then x : zipMaximos xs ys
 elMinimo :: Ord a => [a] -> a
 -- PRECONDICION : LA LISTA NO ES VACÍA
 elMinimo   [x]  = x 
-elMinimo (x:xs) = if x < elMinimo xs
-                        then x
-                        else elMinimo xs 
+elMinimo (x:xs) = elMenor x (elMinimo xs)
+
+elMenor:: Ord a => a -> a -> a
+elMenor x y = if x< y
+                 then x
+                 else y
 
 
 
