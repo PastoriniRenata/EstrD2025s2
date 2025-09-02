@@ -439,7 +439,8 @@ losDevSenior (ConsEmpresa rs) ps = losSenior rs ps
 
 -- FUNCIONES AUXILIARES 
 losSenior :: [Rol] -> [Proyecto] -> Int
--- Proposito: Dada una lista de roles y una lista de proyectos, indica la cantidad de desarrolladores senior que posee, que pertecen además a los proyectos dados por parámetro.
+-- Proposito: Dada una lista de roles y una lista de proyectos, indica la cantidad de desarrolladores senior que posee, 
+--que pertecen además a los proyectos dados por parámetro.
 losSenior   []   ps = 0
 losSenior (r:rs) ps = unoSiCeroSino (esDevSenior r &&  elProyectoPertenece (elProyectoDe r) ps) + losSenior rs ps
 
@@ -447,7 +448,7 @@ losSenior (r:rs) ps = unoSiCeroSino (esDevSenior r &&  elProyectoPertenece (elPr
 
 esDevSenior :: Rol -> Bool
 esDevSenior (Developer s _)  = esSenior s
-esDevSenior (Management s _) = esSenior s
+esDevSenior      _           = False
 
 esSenior :: Seniority -> Bool
 esSenior Senior = True
