@@ -200,10 +200,13 @@ sumatoriaEdades (p:ps) = edadDe p + sumatoriaEdades ps
 elMasViejo :: [Persona] -> Persona
 elMasViejo [] = error "NO HAY PERSONAS!!"
 elMasViejo [p] = p
-elMasViejo (p: ps) = let older = elMasViejo ps
-                        in if esMasViejo p older
-                                then p
-                                else older
+elMasViejo (p: ps) = elMayorEntre p (elMasViejo ps)
+    
+    
+elMayorEntre :: Persona -> Persona -> Persona
+elMayorEntre p1 p2 = if esMasViejo p1 p2
+                        then p1
+                        else p2
 
 esMasViejo :: Persona -> Persona -> Bool
 esMasViejo p1 p2 = edadDe p1 > edadDe p2
