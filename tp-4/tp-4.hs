@@ -414,18 +414,37 @@ todosLosCaminosMaximales mapa_8 --> [[Izq],[Der,Izq],[Der,Der]]
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-{-
 --Nave Espacial
 --modelaremos una Nave como un tipo algebraico, el cual nos permite construir una nave espacial,
 --dividida en sectores, a los cuales podemos asignar tripulantes y componentes. La representación
 --es la siguiente:
 data Componente = LanzaTorpedos | Motor Int | Almacen [Barril]
+    deriving Show
+
 data Barril = Comida | Oxigeno | Torpedo | Combustible
+    deriving Show
+
 data Sector = S SectorId [Componente] [Tripulante]
+    deriving Show
+
 type SectorId = String
 type Tripulante = String
+
 data Tree a = EmptyT | NodeT a (Tree a) (Tree a)
+    deriving Show
+
 data Nave = N (Tree Sector)
+    deriving Show
+
+
+--FUNCIONES OBSERVADORAS
+idDelSector :: Sector -> SectorId
+idDelSector (S id _ _) = id
+
+losTripDelSector :: Sector -> [Tripulante]
+losTripDelSector (S _ _ tps) = tps
+
+
 
 
 nave_1 = N ( NodeT (S "A" [LanzaTorpedos, (Motor 10)] ["Rena", "Gonza"])  (NodeT  (S "B" [LanzaTorpedos, (Motor 20)] ["Azu", "Mile"]) EmptyT 
@@ -434,9 +453,6 @@ nave_1 = N ( NodeT (S "A" [LanzaTorpedos, (Motor 10)] ["Rena", "Gonza"])  (NodeT
                                                                           (NodeT  (S "C" [ (Motor 30)] ["Pabli", "Ami"]) EmptyT
                                                                                                                          (NodeT (S "D" [(Motor 40), Almacen [Comida, Oxigeno, Combustible]] ["Mar"]) EmptyT
                                                                                                                                                                                                      EmptyT )))
-
-
-
 {-
                                                 S "A" [LanzaTorpedos, (Motor 10)] ["Rena", "Gonza"])  
                                                 /                                               \
@@ -445,22 +461,13 @@ nave_1 = N ( NodeT (S "A" [LanzaTorpedos, (Motor 10)] ["Rena", "Gonza"])  (NodeT
                                                                                                                            \
                                                                                                                             \
                                                                                                                         S "D" [(Motor 40), Almacen [Comida, Oxigeno, Combustible]] ["Mar"]
-
 -}
-
-
-
-
 nave_2 = N ( NodeT (S "E" [LanzaTorpedos, (Motor 1)] [ "Gonza"])  (NodeT  (S "F" [LanzaTorpedos, (Motor 2), Almacen [Oxigeno, Combustible] ] ["Azu"]) EmptyT 
                                                                                                                      EmptyT) 
 
                                                                   (NodeT  (S "G" [ (Motor 3)] ["Pabli", "Ami"]) EmptyT
-                                                                                                                (NodeT (S "H" [Almacen [Comida, Torpedo, Combustible]] ["Mile"]) EmptyT
+                                                                                                                (NodeT (S "H" [Almacen [Comida, Torpedo, Combustible]] ["Mile", "Ami"]) EmptyT
                                                                                                                                                                                  EmptyT )))
-
-
-
-
 nave_3 = N ( NodeT (S "A" [LanzaTorpedos, (Motor 10)] ["Rena", "Gonza"])  (NodeT  (S "B" [LanzaTorpedos, (Motor 20)] ["Azu", "Mile"]) EmptyT 
                                                                                                                                       EmptyT   ) 
 
@@ -468,21 +475,49 @@ nave_3 = N ( NodeT (S "A" [LanzaTorpedos, (Motor 10)] ["Rena", "Gonza"])  (NodeT
                                                                                                                          (NodeT (S "D" [(Motor 40), Almacen [Comida, Oxigeno, Combustible]] ["Mar","Rena"]) EmptyT
                                                                                                                                                                                                      EmptyT )))
 
-
 --Implementar las siguientes funciones utilizando recursión estructural:
 --Propósito: Devuelve todos los sectores de la nave.
 sectores :: Nave -> [SectorId]
+sectores (N sts) = losSectores sts
 
+
+losSectores :: Tree Sector -> [SectorId]
+losSectores       EmptyT    = []
+losSectores (NodeT s t1 t2) = (idDelSector s) : losSectores t1 ++ losSectores t2
 
 {-
 sectores nave_1 --> ["A", "B", "C", "D"]
 sectores nave_2 --> ["E", "F", "G", "H"]
+sectores nave_3 --> ["A", "B", "C", "D"]
 -}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Propósito: Devuelve la suma de poder de propulsión de todos los motores de la nave. Nota:
 --el poder de propulsión es el número que acompaña al constructor de motores.
 poderDePropulsion :: Nave -> Int
+poderDePropulsion (N sts) = propulsionTotal sts
+
+
+--FUNCIONES AUXILIARES
+propulsionTotal :: Tree Sector -> Int
+--Proposito: Devuelve la suma de poder de propulsión de todos los motores del tree de sectores.
+propulsionTotal       EmptyT    = 0
+propulsionTotal (NodeT s t1 t2) = propulsion s + propulsionTotal t1 + propulsionTotal t2
+
+propulsion :: Sector -> Int
+--Proposito: Devuelve la suma de poder de propulsión del sector dado.
+propulsion (S _ comps _ ) = poderMotores comps
+
+poderMotores :: [Componente] -> Int
+--Proposito: Devuelve la suma de poder de propulsión de la lista de componentes dada.
+poderMotores   []   = 0
+poderMotores (c:cs) = poderProp c + poderMotores cs
+
+poderProp :: Componente -> Int
+--Proposito: Devuelve el poder de propulsion del componente dado, en caso de no ser un motor devuelve 0.
+poderProp (Motor p) = p
+poderProp     _     = 0
+
 
 {-
 poderDePropulsion nave_1  ---> 100
@@ -492,32 +527,153 @@ poderDePropulsion nave_2  ---> 6
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Propósito: Devuelve todos los barriles de la nave.
 barriles :: Nave -> [Barril]
+barriles (N scts) = losBarrilesDelTree scts
+
+losBarrilesDelTree :: Tree Sector -> [Barril]
+-- Proposito: devuelve los barriles de todos los sectores del tree dado
+losBarrilesDelTree       EmptyT    = []
+losBarrilesDelTree (NodeT s t1 t2) = losBarrilesDelSector s ++ losBarrilesDelTree t1 ++ losBarrilesDelTree t2
+
+losBarrilesDelSector :: Sector -> [Barril]
+-- Proposito: devuelve los barriles del sector dado
+losBarrilesDelSector (S _ comps _ ) = losBarrilesEn comps
+
+losBarrilesEn :: [Componente] -> [Barril]
+-- Proposito: devuelve los barriles de la lista de componentes dada
+losBarrilesEn   []   = []
+losBarrilesEn (c:cs) = barrilesEn c ++ losBarrilesEn cs
+
+barrilesEn :: Componente -> [Barril]
+-- Proposito: devuelve los barriles del componente dado, en caso de no ser un almacen, devuelve la lista vacía
+barrilesEn (Almacen barriles) = barriles
+barrilesEn          _         = []
+
+
 
 {-
 barriles nave_1 --> [Comida, Oxigeno, Combustible]
 barriles nave_2 --> [Oxigeno, Combustible, Comida, Torpedo, Combustible]
 -}
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Propósito: Añade una lista de componentes a un sector de la nave.
 --Nota: ese sector puede no existir, en cuyo caso no añade componentes.
 agregarASector :: [Componente] -> SectorId -> Nave -> Nave
+agregarASector cs id (N sects) = (N (insertarEnSector cs id sects))
+
+
+--FUNCIONES AUXILIARES
+insertarEnSector :: [Componente] -> SectorId -> Tree Sector -> Tree Sector
+--Propósito: Añade una lista de componentes a un sector del Tree de sectores.
+--Nota: ese sector puede no existir, en cuyo caso no añade componentes.
+insertarEnSector  _  _     EmptyT      = EmptyT 
+insertarEnSector cs id (NodeT s s1 s2) = if esMismoId id (idDelSector s)
+                                                then NodeT (agregarComponentes cs s) s1 s2
+                                                else NodeT s (insertarEnSector cs id s1) (insertarEnSector cs id s2)
+
+esMismoId :: SectorId -> SectorId -> Bool
+--Indica si es el mismo id 
+esMismoId id1 id2 = id1 == id2
+
+agregarComponentes :: [Componente] -> Sector -> Sector
+-- Proposito: agrega la lista de componentes dada al sector dado
+agregarComponentes cs1 (S id cs2 tps) = S id (cs2++cs1) tps
+
+{-
+agregarASector [LanzaTorpedos, Motor 22, Almacen [Oxigeno]] "C" nave_1 --> 
+nave_1 = N ( NodeT (S "A" [LanzaTorpedos, Motor 10] ["Rena", "Gonza"]) (NodeT  (S "B" [LanzaTorpedos, Motor 20] ["Azu", "Mile"]) EmptyT 
+                                                                                                                                 EmptyT   ) 
+
+                                                                          (NodeT  (S "C" [ (Motor 30), LanzaTorpedos, Motor 22, Almacen [Oxigeno]] ["Pabli", "Ami"]) EmptyT
+
+agregarASector [LanzaTorpedos, Motor 22, Almacen [Oxigeno]] "H" nave_2 --> 
+nave_2 = N ( NodeT (S "E" [LanzaTorpedos, (Motor 1)] [ "Gonza"])  (NodeT  (S "F" [LanzaTorpedos, (Motor 2), Almacen [Oxigeno, Combustible] ] ["Azu"]) EmptyT 
+                                                                                                                     EmptyT) 
+
+                                                                  (NodeT  (S "G" [ (Motor 3)] ["Pabli", "Ami"]) EmptyT
+                                                                                                                (NodeT (S "H" [Almacen [Comida, Torpedo, Combustible], LanzaTorpedos, Motor 22, Almacen [Oxigeno]] ["Mile"]) EmptyT
+        
+-}
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Propósito: Incorpora un tripulante a una lista de sectores de la nave.
 --Precondición: Todos los id de la lista existen en la nave.
 asignarTripulanteA :: Tripulante -> [SectorId] -> Nave -> Nave
+asignarTripulanteA t ids (N sectores) = N (asignarTripA t ids sectores)
 
+--FUNCIONES AUXILAIRES
+asignarTripA :: Tripulante -> [SectorId] -> Tree Sector -> Tree Sector
+--Proposito: Dados un tripulante, una lista de ids de sectores y un Tree de sectores, asigna el tripulante a 
+-- cada sector en la lista de sectores
+--Precondición: Todos los id de la lista existen en el Tree.
+asignarTripA _    []    sectores = sectores
+asignarTripA t (id:ids) sectores = asignarEn id t (asignarTripA t ids sectores)
+
+asignarEn :: SectorId -> Tripulante ->  Tree Sector -> Tree Sector
+--Proposito: asigna al tripulante dado en el sector del Tree con id dado
+--Precondición: El id existe en el Tree.
+asignarEn id t         EmptyT  = EmptyT
+asignarEn id t (NodeT s s1 s2) = if esMismoId id (idDelSector s)
+                                      then NodeT (agregarTripulante t s) s1 s2
+                                      else NodeT s (asignarEn id t s1) (asignarEn id t s2)
+
+
+agregarTripulante :: Tripulante -> Sector -> Sector
+--Proposito: agregar el tripulante a la lista de tripulantes del sector dado
+agregarTripulante t (S id cps tps) = S id cps (t:tps)
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Propósito: Devuelve los sectores en donde aparece un tripulante dado.
 sectoresAsignados :: Tripulante -> Nave -> [SectorId]
+sectoresAsignados t (N sects) = losSectoresAsignados t sects
+
+--FUNCIONES AUXILIARES
+losSectoresAsignados :: Tripulante -> Tree Sector -> [SectorId]
+--
+losSectoresAsignados t      EmptyT     = []
+losSectoresAsignados t (NodeT s s1 s2) = sectorSiEstaAsignado t s ++ losSectoresAsignados t s1 ++ losSectoresAsignados t s2
+
+sectorSiEstaAsignado :: Tripulante -> Sector -> [SectorId]
+sectorSiEstaAsignado t (S id _ tps) = if pertenece t tps -- los tripulantes son strings
+                                                then [id]
+                                                else []
+
+pertenece :: Eq a => a -> [a] -> Bool
+pertenece _ [] = False
+pertenece y (x:xs) = y==x || pertenece y xs
+
+
+{-
+sectoresAsignados "Rena" nave_1 --> ["A"]
+sectoresAsignados "Rena" nave_2 --> []
+sectoresAsignados "Mar" nave_2--> []
+sectoresAsignados "Ami" nave_2--> ["G", "H"]
+sectoresAsignados "Rena" nave_3 --> ["A", "D"]
+-}
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Propósito: Devuelve la lista de tripulantes, sin elementos repetidos.
 tripulantes :: Nave -> [Tripulante]
+tripulantes (N sectores) = losTripulantes sectores
 
+
+--FUNCIONES AUXILIARES
+losTripulantes :: Tree Sector -> [Tripulante]
+losTripulantes EmptyT = []
+losTripulantes (NodeT s s1 s2) = 
+                    let tripSect1 = losTripulantes s1
+                        tripSect2 = losTripulantes s2
+                    in 
+                        appendSinRepetidos (losTripDelSector s) (appendSinRepetidos tripSect1 tripSect2)
+
+
+appendSinRepetidos :: [Tripulante] -> [Tripulante] -> [Tripulante]
+appendSinRepetidos   []   tps = tps
+appendSinRepetidos (t:ts) tps = if pertenece t tps
+                                    then appendSinRepetidos ts tps
+                                    else t : appendSinRepetidos ts tps
 
 {-
 tripulantes nave_1 -no tiene repetidos-> ["Rena","Gonza","Azu","Mile","Pabli","Ami","Mar"]
@@ -530,6 +686,7 @@ tripulantes nave_3 -tiene repetidos   -> ["Gonza","Azu","Pabli","Mile","Ami","Ma
 
 
 
+{-
 --Manada de lobos
 --Modelaremos una manada de lobos, como un tipo Manada, que es un simple registro compuesto
 --de una estructura llamada Lobo, que representa una jerarquía entre estos animales.
