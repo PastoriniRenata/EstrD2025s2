@@ -99,10 +99,10 @@ zipMaximos (x:xs) (y:ys) = if x>y then x : zipMaximos xs ys
 -- Dada una lista devuelve el mínimo
 elMinimo :: Ord a => [a] -> a
 -- PRECONDICION : LA LISTA NO ES VACÍA
-elMinimo   [x] = x 
-elMinimo (x:xs) = let min = elMinimo xs
-                    in if x<min then x
-                                else min 
+elMinimo   [x]  = x 
+elMinimo (x:xs) = if x < elMinimo xs
+                        then x
+                        else elMinimo xs 
 
 
 
