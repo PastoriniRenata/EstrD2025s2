@@ -1,3 +1,4 @@
+import Data.Text.Internal.Fusion.Size (lowerBound)
 -- 1. Pizzas
 -- Tenemos los siguientes tipos de datos:
 data Pizza = Prepizza
@@ -685,8 +686,6 @@ tripulantes nave_3 -tiene repetidos   -> ["Gonza","Azu","Pabli","Mile","Ami","Ma
 
 
 
-
-{-
 --Manada de lobos
 --Modelaremos una manada de lobos, como un tipo Manada, que es un simple registro compuesto
 --de una estructura llamada Lobo, que representa una jerarquía entre estos animales.
@@ -702,10 +701,10 @@ type Nombre = String -- nombre de lobo
 data Lobo = Cazador Nombre [Presa] Lobo Lobo Lobo
           | Explorador Nombre [Territorio] Lobo Lobo
           | Cría Nombre
+    deriving Show
 
 data Manada = M Lobo
-
-
+    deriving Show
 
 
 manada1 = M (Cazador "A" ["carne","pescado"] (Explorador "B" ["Terr1","Terr2"] (Cría "C") 
@@ -788,28 +787,55 @@ manada3 = M (Cazador "A" ["carne","pescado","carne","pescado"] (Explorador "B" [
 --crías. Resolver las siguientes funciones utilizando recursión estructural sobre la estructura
 --que corresponda en cada caso:
 
-manada = M Cazador "Gonza" ["Pez", "Cierbo", "Conejo"] (Explorador "Azu" ["Rio", "Bosque"] (Cria "Rena") (Cria "Pablo"))
-                                                       (Explorador "Ami" ["Lago"]          (Cria "Mar") (Cria "Fidel"))
-                                                       (Cria "Mile" )
+manada = M (Cazador "Gonza" ["Pez", "Cierbo", "Conejo"] (Explorador "Azu" ["Rio", "Bosque"] (Cría "Rena") (Cría "Pablo"))
+                                                       (Explorador "Ami" ["Lago"]          (Cría "Mar") (Cría "Fidel"))
+                                                       (Cría "Mile" ))
 
 
---Propósito: dada una manada, indica si la cantidad de alimento cazado es mayor a la can-
---tidad de crías.
+--Propósito: dada una manada, indica si la cantidad de alimento cazado es mayor a la cantidad de crías.
 buenaCaza :: Manada -> Bool
+buenaCaza manada =  cantAlimentoEn manada > cantDeCríasEn manada
 
+--FUNCIONES AUXILIARES
+cantAlimentoEn :: Manada -> Int
+cantAlimentoEn (M lobo) = cantAlimento lobo 
 
+cantAlimento :: Lobo -> Int
+cantAlimento (Cazador _ presas l1 l2 l3) = longitud presas + cantAlimento l1 + cantAlimento l2 + cantAlimento l3
+cantAlimento   (Explorador _ _ l1 l2)    = cantAlimento l1 + cantAlimento l2
+cantAlimento           (Cría _)          = 0
+
+longitud :: [a] -> Int
+longitud []       = 0
+longitud (_ : xs) = 1 + longitud xs
+ 
+cantDeCríasEn :: Manada -> Int
+cantDeCríasEn (M lobo) = cantCrías lobo
+
+cantCrías :: Lobo -> Int
+cantCrías (Cazador _ _ l1 l2 l3) = cantCrías l1 + cantCrías l2 + cantCrías l3
+cantCrías (Explorador _ _ l1 l2) = cantCrías l1 + cantCrías l2
+cantCrías        (Cría _)        = 1
 
 {-
+
+buenaCaza manada  --> False ( 3 presas y  5 Crías)
 buenaCaza manada1 --> False ( 5 presas y  9 Crías)
 buenaCaza manada2 --> True  (11 presas y  9 Crías)
 buenaCaza manada3 --> True  (17 presas y 11 Crías)
 -}
+
+
+{-
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Propósito: dada una manada, devuelve el nombre del lobo con más presas cazadas, junto
 --con su cantidad de presas. Nota: se considera que los exploradores y crías tienen cero presas
 --cazadas, y que podrían formar parte del resultado si es que no existen cazadores con más de
 --cero presas.
 elAlfa :: Manada -> (Nombre, Int)
+elAlfa (M lobo) =
+
+
 
 
 {-
@@ -861,7 +887,7 @@ manadaEj = Cazador "DienteFiloso" ["Búfalos", "Antílopes"] (Cría "Hopito")
                                                                                                            (Cría "Rabito") ) 
                                                            (Cazador "Garras" ["Antílopes", "Ciervos"] (Explorador "Zarpado" ["Bosque este"] (Cría "Osado") 
                                                                                                                                             (Cazador "Mandíbulas" ["Cerdos", "Pavos"] (Cría "Desgreñado") 
-                                                                                                                                                                                      (Cría "Malcriado") 
+                                                                                                                                                                                      (Cría "MalCríado") 
                                                                                                                                                                                       (Cazador "TrituraHuesos" ["Conejos"]  (Cría "Peludo") 
                                                                                                                                                                                                                             (Cría "Largo") 
                                                                                                                                                                                                                             (Cría "Menudo") ) ) ) 
