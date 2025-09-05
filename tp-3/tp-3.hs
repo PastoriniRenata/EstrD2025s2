@@ -560,3 +560,42 @@ simplificarNeg :: ExpA -> ExpA
 simplificarNeg (Neg exp) = exp
 simplificarNeg exp = Neg exp
 
+--EJERCICIO CLASE
+type Stock = [(String, Int)]
+-- OBS: no hay dos tuplas con el mismo valor de String
+
+-- Dada una lista de stocks los combina agrupando por nombre de producto
+-- y sumando las cantidades del mismo de los diferentes stocks
+
+stock1 = [("Arroz", 3), ("Pan", 5), ("Coca",6)]
+stock2 = [("Arroz", 1), ("Coca",10)]
+stock3 = [("Arroz", 1), ("Pan", 1), ("Papas", 4)]
+
+
+combinar :: [Stock] -> Stock
+combinar   []    = []-- creo un stock inicial, que es una lista vacía
+combinar (s: ss) = unificarStocks s (combinar ss) -- con la recursion yo se que trabajo con dos stocks
+
+unificarStocks :: Stock -> Stock -> Stock
+unificarStocks   []   s = s
+unificarStocks (e:es) s = ingresarElemento e (unificarStocks es s)
+
+ingresarElemento:: (String, Int) -> Stock -> Stock
+ingresarElemento x   []   = [x]
+ingresarElemento x (e:es) = if sonMismoProducto x e 
+                                    then unificarElementos x e : es
+                                    else e: ingresarElemento x es
+    
+unificarElementos :: (String, Int) -> (String, Int) -> (String, Int) 
+unificarElementos p1 p2 = (fst p1, snd p1 + snd p2)
+
+sonMismoProducto :: (String, Int) -> (String, Int) -> Bool
+sonMismoProducto p1 p2 = fst p1 == fst p2               
+
+
+
+{-
+
+combinar [stock1, stock2, stock3] -->  [("Arroz", 5), ("Pan", 6), ("Coca",16), ("Papas", 4)]
+
+-}
