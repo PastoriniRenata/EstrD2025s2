@@ -116,10 +116,10 @@ hayTesoro camino_3 --> True
 -- Definir las siguientes funciones:
 
 -- Indica si hay un cofre con un tesoro en el camino.
-hayTesoroEnCamino :: Camino -> Bool
-hayTesoroEnCamino      Fin      = False
-hayTesoroEnCamino (Cofre obs c) = contieneTesoro obs || hayTesoroEnCamino c
-hayTesoroEnCamino (Nada c)      = hayTesoroEnCamino c
+hayTesoro :: Camino -> Bool
+hayTesoro      Fin      = False
+hayTesoro (Cofre obs c) = contieneTesoro obs || hayTesoro c
+hayTesoro (Nada c)      = hayTesoro c
 
 
 --FUNCIONES AUXILIARES 
@@ -275,7 +275,6 @@ tree_1 = NodeT 1 (NodeT 2  (NodeT 3 (EmptyT)
                             (EmptyT)) 
                   (NodeT 7  (EmptyT)
                             (EmptyT))
-
 tree_2 = EmptyT
 tree_3 = NodeT 10 (NodeT 10 (EmptyT) (EmptyT)) (EmptyT)
 tree_4 = NodeT "hola" (NodeT "chau" (EmptyT) (EmptyT)) (EmptyT)
@@ -292,6 +291,7 @@ tree_7 = NodeT 1 (NodeT 2  (NodeT 3 (EmptyT)
                                                                     (EmptyT)) 
                                                           (EmptyT)))) 
                            (EmptyT)) 
+
                   (NodeT 7  (NodeT 8 (EmptyT) 
                                      (NodeT 9 (EmptyT) 
                                               (NodeT 10 (NodeT 11 (EmptyT) 
@@ -432,11 +432,37 @@ elementoActual (NodeT y t1 t2)  = [y]
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Dado un árbol devuelve una lista de listas en la que cada elemento representa un nivel de dicho árbol.
 listPerLevel :: Tree a -> [[a]]
-listPerLevel t = listasPorNivel t (heightT t - 1)
+listPerLevel      EmptyT      = []
+listPerLevel (NodeT y t1 t2)  = [y] : unirNivelesAnteriores (listPerLevel t1) (listPerLevel t2)
 
-listasPorNivel :: Tree a -> Int -> [[a]]
-listasPorNivel t 0 =  [levelN 0 t]
-listasPorNivel t n =  [levelN n t] ++ listasPorNivel t (n-1)
+
+unirNivelesAnteriores :: [[a]] -> [[a]] -> [[a]]
+unirNivelesAnteriores   []     ys   = ys
+unirNivelesAnteriores   xs     []   = xs
+unirNivelesAnteriores (x:xs) (y:ys) = (x++y): unirNivelesAnteriores xs ys
+
+
+--ESTRATEGIA:
+--Cuando la recursion "vuelve" Unifico la primera lista de cada rama
+
+
+
+
+
+{-
+listPerLevel tree_1 --> [[1],[2,7],[3],[4],[5],[6]] 
+         rta consola--> [[1],[2,7],[3],[4],[5],[6]]
+
+listPerLevel tree_7 --> [[1],[2,7],[3,8],[4,9],[5,10],[6,11],[12],[13]]
+        rta consola--> [[1],[2,7],[3,8],[4,9],[5,10],[6,11],[12],[13]]
+
+listPerLevel arbol_1_prueba --> [[1],[2,2],[3,3,3,3],[4,4,4,4,4,4,4,4],[5,5,5]]
+                 rta consola--> [[1],[2,2],[3,3,3,3],[4,4,4,4,4,4,4,4],[5,5,5]]
+
+listPerLevel arbol_toList_Ordenado --> [[0],[5,8],[3,6,7,9],[2,5,20],[1]]
+                       rta consola --> [[0],[5,8],[3,6,7,9],[2,4,10],[1]]
+
+-}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Devuelve los elementos de la rama más larga del árbol
