@@ -177,19 +177,15 @@ hayTesoroEn 3 camino_3 --> True
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 -- Indica si hay al menos ?n? tesoros en el camino.
 alMenosNTesoros :: Int -> Camino -> Bool
-alMenosNTesoros n c = n <= cantTesorosEn c
+alMenosNTesoros 0       _       = True
+alMenosNTesoros n      Fin      = False
+alMenosNTesoros n (Cofre obs c) = n <= cantTesorosAca obs || alMenosNTesoros (n-cantTesorosAca obs) c
+alMenosNTesoros n (Nada c) = alMenosNTesoros n c
 
 
 -- FUNCIONES AUXILIARES
-cantTesorosEn :: Camino -> Int
--- Proposito: dado un camino indica la cantidad de tesoros en él
-cantTesorosEn     Fin       = 0
-cantTesorosEn (Cofre obs c) = cantTesorosAca obs + cantTesorosEn c
-cantTesorosEn (Nada c)      = cantTesorosEn c
-
 cantTesorosAca :: [Objeto] -> Int
 cantTesorosAca   []   = 0
 cantTesorosAca (o:os) = unoSiCeroSino (esTesoro o) + cantTesorosAca os
