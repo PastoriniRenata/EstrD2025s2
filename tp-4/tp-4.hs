@@ -16,6 +16,9 @@ pizza1 = Capa Queso(Capa Jamon(Capa (Aceitunas 8)(Capa Salsa(Capa Jamon(Capa Que
 pizza2 = Capa Jamon Prepizza
 pizza3 = Capa Salsa(Capa Jamon Prepizza)
 pizza4 = Capa Salsa(Capa Queso (Capa Salsa(Capa Queso Prepizza)))
+prepizza = Prepizza
+soloQueso = Capa Queso(Capa Queso (Capa Queso(Capa Queso Prepizza)))
+soloSalsa = Capa Salsa(Capa Salsa (Capa Salsa(Capa Salsa Prepizza)))
 
 --Denir las siguientes funciones:
 
@@ -75,14 +78,22 @@ sacarJamon pizza3 --> Capa Salsa Prepizza
 --Dice si una pizza tiene solamente salsa y queso (o sea, no tiene de otros ingredientes. En
 --particular, la prepizza, al no tener ningún ingrediente, debería dar verdadero.)
 tieneSoloSalsaYQueso :: Pizza -> Bool
-tieneSoloSalsaYQueso  Prepizza  = True
-tieneSoloSalsaYQueso (Capa i c) = esSalsaOQueso i && tieneSoloSalsaYQueso c
+tieneSoloSalsaYQueso p = let (s,q,o) = recuentoIngredientes p
+                            in s>0 && q>0 && o==0
+                        
 
 
-esSalsaOQueso :: Ingrediente -> Bool
-esSalsaOQueso Salsa = True
-esSalsaOQueso Queso = True
-esSalsaOQueso   _   = False
+recuentoIngredientes :: Pizza -> (Int, Int, Int)
+recuentoIngredientes   Prepizza     = (0,0,0)
+recuentoIngredientes (Capa Salsa p) = sumarTuplas (1,0,0) (recuentoIngredientes p)
+recuentoIngredientes (Capa Queso p) = sumarTuplas (0,1,0) (recuentoIngredientes p)
+recuentoIngredientes (Capa   _   p) = sumarTuplas (0,0,1) (recuentoIngredientes p)
+
+
+sumarTuplas :: (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int)
+sumarTuplas (a,b,c) (x,y,z) = (a+x, b+y, c+z)
+
+
 
 {-
 tieneSoloSalsaYQueso pizza1 --> False
@@ -90,6 +101,9 @@ tieneSoloSalsaYQueso pizza2 --> False
 tieneSoloSalsaYQueso pizza3 --> False
 tieneSoloSalsaYQueso pizza4 --> True
 
+tieneSoloSalsaYQueso prepizza  --> False
+tieneSoloSalsaYQueso soloQueso --> False
+tieneSoloSalsaYQueso soloSalsa --> False
 -}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -310,18 +324,11 @@ caminoAlTesoro mapa_6 --> [Izq, Der]
 --Indica el camino de la rama más larga.
 caminoDeLaRamaMasLarga :: Mapa -> [Dir]
 caminoDeLaRamaMasLarga      (Fin _ )         = []
-caminoDeLaRamaMasLarga (Bifurcacion c m1 m2) = 
-                let (dir, mapa) = dirYRamaMasLarga m1 m2
-                    in    dir : caminoDeLaRamaMasLarga mapa
-
-
---FUNCIONES AUXILIARES
-dirYRamaMasLarga :: Mapa -> Mapa -> (Dir, Mapa)
--- Dados dos mapas, devuelve una tupla con el mapa mas largo y la direccion en la que está ubicado respecto a su padre (Izq si el primer mapa es mas largo que el segundo, y Der en caso contrario)
--- OBS/Precondicion?? : m1 y m2 son mapas hijos de una bifurcación
-dirYRamaMasLarga m1 m2 = if elMapaEsMasLargo m1 m2
-                                then (Izq, m1)
-                                else (Der, m2)
+caminoDeLaRamaMasLarga (Bifurcacion c m1 m2) = if elMapaEsMasLargo m1 m2
+                                                         then Izq : caminoDeLaRamaMasLarga m1
+                                                         else Der : caminoDeLaRamaMasLarga m2
+                                                            
+                                                            
 
 elMapaEsMasLargo :: Mapa -> Mapa -> Bool
 -- Dados dos mapas, indica si el primer mapa es mas largo que el segundo
@@ -826,17 +833,23 @@ buenaCaza manada3 --> True  (17 presas y 11 Crías)
 -}
 
 
-{-
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Propósito: dada una manada, devuelve el nombre del lobo con más presas cazadas, junto
 --con su cantidad de presas. Nota: se considera que los exploradores y crías tienen cero presas
 --cazadas, y que podrían formar parte del resultado si es que no existen cazadores con más de
 --cero presas.
 elAlfa :: Manada -> (Nombre, Int)
-elAlfa (M lobo) =
+elAlfa (M lobo) = alfaEn lobo
+
+alfaEn :: Lobo -> (Nombre, Int)
+alfaEn (Cazador n presas l1 l2 l3) = elQueTieneMasPresas (n, longitud presas) (elQueTieneMasPresas (alfaEn l1) (elQueTieneMasPresas (alfaEn l2) (alfaEn l3)))
+alfaEn  (Explorador _ _ l1 l2)     = elQueTieneMasPresas (alfaEn l1) (alfaEn l2)
+alfaEn          (Cría _)           = ("",0)
 
 
-
+elQueTieneMasPresas :: (Nombre, Int) -> (Nombre, Int) -> (Nombre, Int) 
+elQueTieneMasPresas (n1, c1) (n2, c2) = if c1>c2 then (n1, c1)
+                                                 else (n2, c2)
 
 {-
 elAlfa manada1 --por como está programado--> ("K",2)
@@ -848,7 +861,15 @@ elAlfa manada3 ----------------------------> ("F",6)
 --Propósito: dado un territorio y una manada, devuelve los nombres de los exploradores que
 --pasaron por dicho territorio.
 losQueExploraron :: Territorio -> Manada -> [Nombre]
+losQueExploraron t (M lobo) = losExploradoresDe t lobo
 
+
+losExploradoresDe :: Territorio -> Lobo -> [Nombre]
+losExploradoresDe t (Cazador _ _ l1 l2 l3)   = losExploradoresDe t l1 ++ losExploradoresDe t l2 ++ losExploradoresDe t l3
+losExploradoresDe t          (Cría _)        = []
+losExploradoresDe t  (Explorador n ts l1 l2) = if pertenece t ts 
+                                                then n : losExploradoresDe t l1 ++ losExploradoresDe t l2
+                                                else losExploradoresDe t l1 ++ losExploradoresDe t l2
 
 {-
 losQueExploraron "Terr1" manada1 --> ["B"]
@@ -862,14 +883,58 @@ losQueExploraron "Terr2" manada1 --> ["B"]
 --torio y cuyo segundo elemento es la lista de los nombres de los exploradores que exploraron
 --dicho territorio. Los territorios no deben repetirse.
 exploradoresPorTerritorio :: Manada -> [(Territorio, [Nombre])]
+exploradoresPorTerritorio (M lobo) = losExploradoresPorTerritorio lobo
+{-
+cuando llego a un explorador, agarro su lista de territorios y por cada territorio en esa lista: veo - si el territorio ya está en la lista de tuplas, si ya está agrego el lobo(su nombre) a la lista de la tupl
+                                                                                                     - si el territorio no está, creo la tupla con el nombre del lobo en el q estoy
+
+
+-}
+
+losExploradoresPorTerritorio :: Lobo -> [(Territorio, [Nombre])]
+losExploradoresPorTerritorio  (Explorador n ts l1 l2) = agregarATuplas n ts (unificarTuplasSinRepetidos (losExploradoresPorTerritorio l1) 
+                                                                                                        (losExploradoresPorTerritorio l2))
+losExploradoresPorTerritorio (Cazador _ _ l1 l2 l3)   = unificarTuplasSinRepetidos (losExploradoresPorTerritorio l1) 
+                                                                                   (unificarTuplasSinRepetidos (losExploradoresPorTerritorio l2) 
+                                                                                                               (losExploradoresPorTerritorio l3))
+losExploradoresPorTerritorio          (Cría _)        = []
+
+
+unificarTuplasSinRepetidos :: [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])]
+--PROPOSITO: dadas dos listas del tipo (Territorio, [Nombre]) unifica las mismas en una sola q no contenga repetidos.
+unificarTuplasSinRepetidos   []   ys = ys
+unificarTuplasSinRepetidos (t:ts) ys = ingresarTupla t (unificarTuplasSinRepetidos ts ys)
+
+ingresarTupla :: (Territorio, [Nombre]) -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])]
+ingresarTupla x   []   = [x]
+ingresarTupla x (t:ts) = if sonMismoTerritorio (fst x) (fst t) 
+                                    then unificarTupla x t : ts
+                                    else t : ingresarTupla x ts
+
+sonMismoTerritorio :: Territorio -> Territorio -> Bool
+sonMismoTerritorio t1 t2 = t1==t2
+
+
+unificarTupla :: (Territorio, [Nombre]) -> (Territorio, [Nombre]) -> (Territorio, [Nombre])
+unificarTupla t1 t2 = (fst t1, snd t1 ++ snd t2)
+
+
+agregarATuplas :: Nombre -> [Territorio] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])]
+--Proposito: agregar el nombre dado a los territorios dados en la lista de (Territorio, [Nombre]) dada
+agregarATuplas n   []   tss = tss
+agregarATuplas n (t:ts) tss = ingresarTupla (t, [n]) (agregarATuplas n ts tss) 
 
 {-
+Cazador Nombre [Presa] Lobo Lobo Lobo
+Explorador Nombre [Territorio] Lobo Lobo
+Cría Nombre
+
 exploradoresPorTerritorio manada1 --> [("Terr1",["B"]),("Terr2",["B"]),("Terr3",["D"])]   
-                         rta real---> [("Terr1",["B"]),("Terr2",["B"]),("Terr3",["D"])]            
+                  rta en terminal---> [("Terr1",["B"]),("Terr2",["B"]),("Terr3",["D"])]            
 exploradoresPorTerritorio manada2 --> [("Terr1",["B","D"]),("Terr2",["B"])] 
-                         rta real---> [("Terr2",["B"]),("Terr1",["B","D"])]  -- xq como esta programado lo de sin repetidos me queda al reves
+                  rta en terminal---> [("Terr2",["B"]),("Terr1",["B","D"])]  -- xq como esta programado lo de sin repetidos me queda al reves
 exploradoresPorTerritorio manada3 --> [("Terr1",["B"]),("Terr2",["B"]),("Terr3",["D"])]
-                         rta real---> [("Terr1",["B"]),("Terr2",["B"]),("Terr3",["D"])]
+                  rta en terminal---> [("Terr1",["B"]),("Terr2",["B"]),("Terr3",["D"])]
 -}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -878,11 +943,45 @@ exploradoresPorTerritorio manada3 --> [("Terr1",["B"]),("Terr2",["B"]),("Terr3",
 --subordinado de un subordinado).
 cazadoresSuperioresDe :: Nombre -> Manada -> [Nombre]
 --Precondición: hay un lobo con dicho nombre y es único.
+cazadoresSuperioresDe n (M lobo) = busquedaDeCazSuperiores n lobo 
+
+
+busquedaDeCazSuperiores :: Nombre -> Lobo -> [Nombre]
+busquedaDeCazSuperiores n lobo = snd (losCazadoresSuperiores n lobo)
+
+
+losCazadoresSuperiores :: Nombre -> Lobo -> (Bool, [Nombre])
+losCazadoresSuperiores n1          (Cría n2)        = (n1==n2, [])
+losCazadoresSuperiores n1 (Cazador n2 _ l1 l2 l3)   = if n1 == n2 
+                                                        then (True, [])
+                                                        else let t1 = losCazadoresSuperiores n1 l1
+                                                                 t2 = losCazadoresSuperiores n1 l2
+                                                                 t3 = losCazadoresSuperiores n1 l3
+                                                                 (b, ns) = laTuplaQueCumple t1 (laTuplaQueCumple t2 t3)
+                                                                in (b, n2 : ns)
+
+losCazadoresSuperiores n1  (Explorador n2 _ l1 l2)  = if n1 == n2 
+                                                        then (True, [])
+                                                        else let t1 = losCazadoresSuperiores n1 l1
+                                                                 t2 = losCazadoresSuperiores n1 l2
+                                                                in laTuplaQueCumple t1 t2
+
+
+laTuplaQueCumple :: (Bool, [Nombre]) -> (Bool, [Nombre]) -> (Bool, [Nombre]) 
+--Proposito: en caso de que la primera tupla tenga un true, devuelve la misma, sino devuelve la otr tupla
+laTuplaQueCumple (True, ns) _ = (True, ns)
+laTuplaQueCumple    _      t2 = t2
+
+--estrategia: recolecto los lobos cazadores hasta encontrar al lobo dado.
+
+
+
+
 
 
 
 --Suponiendo la siguiente manada de ejemplo:
-manadaEj = Cazador "DienteFiloso" ["Búfalos", "Antílopes"] (Cría "Hopito") 
+manadaEj = M (Cazador "DienteFiloso" ["Búfalos", "Antílopes"] (Cría "Hopito") 
                                                            (Explorador "Incansable" ["Oeste hasta el río"] (Cría "MechónGris") 
                                                                                                            (Cría "Rabito") ) 
                                                            (Cazador "Garras" ["Antílopes", "Ciervos"] (Explorador "Zarpado" ["Bosque este"] (Cría "Osado") 
@@ -892,8 +991,9 @@ manadaEj = Cazador "DienteFiloso" ["Búfalos", "Antílopes"] (Cría "Hopito")
                                                                                                                                                                                                                             (Cría "Largo") 
                                                                                                                                                                                                                             (Cría "Menudo") ) ) ) 
                                                                                                       (Cría "Garrita") 
-                                                                                                      (Cría "Manchas") )
+                                                                                                      (Cría "Manchas") ))
 
+{-
 --la función cazadoresSuperioresDe debería dar lo siguiente:
 --cazadoresSuperioresDe "Mandíbulas" manadaEj = ["DienteFiloso", "Garras"]
 --cazadoresSuperioresDe "Rabito" manadaEj = ["DienteFiloso"]
