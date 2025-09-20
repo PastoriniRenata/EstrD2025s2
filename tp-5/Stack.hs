@@ -4,7 +4,7 @@ que los últimos elementos agregados a la estructura son los primeros en salir (
 platos). Su interfaz es la siguiente:
 -}
 module Stack
-    (Stack, emptyS, isEmptyS, push, top, pop, lenS )
+    (Stack, emptySt, isEmptySt, push, top, pop, lenS )
 where
 
 
@@ -14,36 +14,40 @@ data Stack a = St [a] Int
     deriving Show
     {-
     Inv. representacion
-        - El ultimo elemento en ingresar es el ultimo en salir
         - n la cantidad de elementos de la pila
     -}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Crea una pila vacía.
-emptyS :: Stack a
-
+emptySt :: Stack a
+emptySt = St [] 0
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Dada una pila indica si está vacía.
-isEmptyS :: Stack a -> Bool
-
+isEmptySt :: Stack a -> Bool
+isEmptySt (St _ n) = n==0
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Dados un elemento y una pila, agrega el elemento a la pila.
 push :: a -> Stack a -> Stack a
-
+push x (St xs n) = St (x:xs) (n+1)
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Dada un pila devuelve el elemento del tope de la pila.
 top :: Stack a -> a
-
+top (St [] _ ) = error "El set está vacío"
+top (St ls _ ) = let (x:xs) = ls
+                    in x
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Dada una pila devuelve la pila sin el primer elemento.
 pop :: Stack a -> Stack a
-
+pop (St [] _ ) = error "El set está vacío"
+pop (St ls n ) = let (x:xs) = ls
+                    in St xs (n-1)
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Dada la cantidad de elementos en la pila.
 --Costo: constante.
 lenS :: Stack a -> Int
+lenS (St _ n) = n
