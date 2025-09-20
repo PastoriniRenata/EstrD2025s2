@@ -266,23 +266,28 @@ hayTesoro mapa_5 --> False
 --Indica si al final del camino hay un tesoro. Nota: el final de un camino se representa con una
 --lista vacía de direcciones.
 hayTesoroEn :: [Dir] -> Mapa -> Bool
-hayTesoroEn   []              m           =  existeTesoro (cofreActual m)
-hayTesoroEn (d:ds)        (Fin c )        =  existeTesoro c
-hayTesoroEn (d:ds)  (Bifurcacion _ m1 m2) = if esIzquierda d
-                                                then hayTesoroEn ds m1
-                                                else hayTesoroEn ds m2
+hayTesoroEn   []    m = existeTesoro (cofreActual m)
+hayTesoroEn (d:ds)  m = if esFin m
+                            then error "No llegaste al final del camino, te quedan posiciones por recorrer"
+                            else hayTesoroEn ds (siguientePaso d m)
 
---FUNCIONES AUXILIARES
-esIzquierda :: Dir -> Bool
-esIzquierda Izq = True
-esIzquierda  _  = False
+
+esFin :: Mapa -> Bool
+esFin (Fin _) = True
+esFin   _     = False
+
+siguientePaso :: Dir -> Mapa -> Mapa
+--Precondicion: el mapa es una bifurcacion
+siguientePaso Izq (Bifurcacion _ m1 _) = m1
+siguientePaso Der (Bifurcacion _ _ m2) = m2
+
 
 {-
 hayTesoroEn [Izq,Der] mapa_1            --> True
 hayTesoroEn [Der] mapa_1                --> True
-hayTesoroEn [Izq, Izq, Izq, Izq] mapa_2 --> False //EL MAPA LLEGA A FIN ALTES DE QUE SE TERMINE LA LISTA
+hayTesoroEn [Izq, Izq, Izq, Izq] mapa_2 --> Error -> EL MAPA LLEGA A FIN ALTES DE QUE SE TERMINE LA LISTA
 hayTesoroEn [] mapa_3                   --> True
-hayTesoroEn [Der, Der] mapa_4           --> True
+hayTesoroEn [Der, Der] mapa_4           --> Error 
 -}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -941,16 +946,18 @@ exploradoresPorTerritorio manada3 --> [("Terr1",["B"]),("Terr2",["B"]),("Terr3",
 --Propósito: dado el nombre de un lobo y una manada, indica el nombre de todos los ca-
 --zadores que tienen como subordinado al lobo dado (puede ser un subordinado directo, o el
 --subordinado de un subordinado).
+{-
 cazadoresSuperioresDe :: Nombre -> Manada -> [Nombre]
 --Precondición: hay un lobo con dicho nombre y es único.
 cazadoresSuperioresDe n (M lobo) = busquedaDeCazSuperiores n lobo 
-
 
 busquedaDeCazSuperiores :: Nombre -> Lobo -> [Nombre]
 busquedaDeCazSuperiores n lobo = snd (losCazadoresSuperiores n lobo)
 
 
 losCazadoresSuperiores :: Nombre -> Lobo -> (Bool, [Nombre])
+--PROPOSITO: dado un lobo y un nombre, en la tupla resultante indica True si en el lobo dado existe un lobo con ese nombre
+-- y la lista de nombres de los cazadores que son superiores a dicho lobo
 losCazadoresSuperiores n1          (Cría n2)        = (n1==n2, [])
 losCazadoresSuperiores n1 (Cazador n2 _ l1 l2 l3)   = if n1 == n2 
                                                         then (True, [])
@@ -973,10 +980,37 @@ laTuplaQueCumple (True, ns) _ = (True, ns)
 laTuplaQueCumple    _      t2 = t2
 
 --estrategia: recolecto los lobos cazadores hasta encontrar al lobo dado.
+-}
+
+
+----------------------------------------------------------------------------------
+--VERSION CON IFS vista en clase
+
+
+
+cazadoresSuperioresDe :: Nombre -> Manada -> [Nombre]
+--Precondición: hay un lobo con dicho nombre y es único.
+cazadoresSuperioresDe n (M lobo) = cazadoresSuperioresDeLobo n lobo 
+
+cazadoresSuperioresDeLobo :: Nombre -> Lobo -> [Nombre]
+cazadoresSuperioresDeLobo nom         (Cría n)          = if nom == n then [] else error "el lobo no está en la manada"
+cazadoresSuperioresDeLobo nom (Cazador n _ l1 l2 l3)    = if nom == n then [] else if existeLoboEn nom l1
+                                                                                        then n: cazadoresSuperioresDeLobo nom l1
+                                                                                        else if existeLoboEn nom l2
+                                                                                                then n : cazadoresSuperioresDeLobo nom l2
+                                                                                                else n : cazadoresSuperioresDeLobo nom l3 -- x precondicion si no esta en ninguno de los otros dos lobos, tiene q estar en este 
+
+cazadoresSuperioresDeLobo nom   (Explorador n _ l1 l2)  = if nom == n then [] else if existeLoboEn nom l1
+                                                                                        then cazadoresSuperioresDeLobo nom l1
+                                                                                        else cazadoresSuperioresDeLobo nom l2 -- x precondicion si no esta en  el otros lobo, tiene q estar en este 
 
 
 
 
+existeLoboEn :: Nombre -> Lobo -> Bool
+existeLoboEn nom         (Cría n)        = nom == n 
+existeLoboEn nom (Explorador n ts l1 l2) = nom == n || existeLoboEn nom l1 || existeLoboEn nom l2
+existeLoboEn nom (Cazador n _ l1 l2 l3)  = nom == n || existeLoboEn nom l1 || existeLoboEn nom l2 || existeLoboEn nom l3
 
 
 
