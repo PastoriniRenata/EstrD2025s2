@@ -1,7 +1,4 @@
 import Set
-    --import SetConRepetidos
-    --import QueueV1
-    --import QueueV2
 import Queue
 import Stack
 
