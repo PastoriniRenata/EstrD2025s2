@@ -34,13 +34,14 @@ esVacia  _ = False
 
 --Propósito: inserta un elemento en la priority queue.
 insertPQ :: Ord a => a -> PriorityQueue a -> PriorityQueue a --O(N), donde N es la cantidad de elementos en la PQ
-insertPQ x (Pq ls) = insertarLs x ls
+insertPQ x (Pq ls) = Pq (insertarLs x ls)
 
 insertarLs :: Ord a => a -> [a] -> [a]
 -- PROPOSITO: dado un elemento y una lista, retorna la lista modificada con el elemento insertado en la posici'on 
 -- que le corresponda, en orden
 insertarLs x [] = [x]
 insertarLs x ls = let (y:ys) = ls 
+                    in
                     if x<y then x:ls
                            else y: (insertarLs x ys)
                              
@@ -52,7 +53,7 @@ insertarLs x ls = let (y:ys) = ls
 --Propósito: devuelve el elemento más prioriotario (el mínimo) de la priority queue.
 --Precondición: parcial en caso de priority queue vacía.
 findMinPQ :: Ord a => PriorityQueue a -> a -- O(1)
-findMinPQ (Pq ls) = finMinLs ls
+findMinPQ (Pq ls) = findMinLs ls
 
 findMinLs :: Ord a => [a] -> a
 findMinLs   []   = error"la Priority Queue está vacía"
@@ -66,7 +67,7 @@ findMinLs (x:xs) = x
 deleteMinPQ :: Ord a => PriorityQueue a -> PriorityQueue a --O(1)
 deleteMinPQ (Pq ls) = Pq (deleteMinLs ls)
 
-deleteMinLs :: Ord a => [a] -> a
+deleteMinLs :: Ord a => [a] -> [a]
 deleteMinLs   []   = error"la Priority Queue está vacía"
 deleteMinLs (x:xs) = xs
 

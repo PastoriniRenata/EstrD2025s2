@@ -60,7 +60,7 @@ valuesM map = losValores (keys map) map
 
 losValores :: Eq k => [k] -> Map k v 
 losValores   []   map = []
-losValores (k:ks) map = (lookUpM k map) : losValores ks map
+losValores (k:ks) map = (lookupM k map) : losValores ks map
 
 {-
 
@@ -71,7 +71,7 @@ losValores (k:ks) map = (lookUpM k map) : losValores ks map
 --Propósito: indica si en el map se encuentran todas las claves dadas.
 todasAsociadas :: Eq k => [k] -> Map k v -> Bool
 todasAsociadas   []   map = True
-todasAsociadas (c:cs) map = case lookUpM k map of
+todasAsociadas (c:cs) map = case lookupM k map of
                                 Just v  -> todasAsociadas cs map
                                 Nothing -> False
 
@@ -97,7 +97,7 @@ mapToList map = tuplasClaveValor (keys map) map
 
 tuplasClaveValor :: [k] -> Map k v -> [(k, v)]
 tuplasClaveValor   []   map = []
-tuplasClaveValor (c:cs) map = let v = fromJust (lookUpM c) map
+tuplasClaveValor (c:cs) map = let v = fromJust (lookupM c) map
                                  in (c, v) : tuplasClaveValor cs map
 
 fromJust :: Maybe v -> v
@@ -109,12 +109,12 @@ fromJust Nothing  = error "es un Valor de tipo Nothing"
 --Propósito: dada una lista de pares clave valor, agrupa los valores de los pares que compartan
 --la misma clave.
 agruparEq :: Eq k => [(k, v)] -> Map k [v]
-agruparEq   []      = emptyM
-agruparEq (cv, cvs) = let (c,v) = cv
-                            map = agruparEq cvs -- la recursión
-                        in case lookUpM c map in
-                            Just xs -> assocM c (v:xs) map
-                            Nothing -> assocM c [v] map
+agruparEq   []     = emptyM
+agruparEq (cv:cvs) = let (c,v) = cv
+                         map = agruparEq cvs -- la recursión
+                            in case lookupM c map in
+                                Just xs -> assocM c (v:xs) map
+                                Nothing -> assocM c [v] map
 
 -- el assocM pisa valores!!!
 
@@ -125,8 +125,8 @@ agruparEq (cv, cvs) = let (c,v) = cv
 --cada número asociado con dichas claves.
 incrementar :: Eq k => [k] -> Map k Int -> Map k Int
 incrementar   []    map = map
-incrementar (c,cs)  map = case lookUpM c map of
-                            Just x -> assocM c (x+1) map
+incrementar (c:cs)  map = case lookupM c map of
+                            Just x -> assocM c (x+1) (incrementar cs map)
                             Nothing -> incrementar cs map
 
 
@@ -144,18 +144,15 @@ mergeMaps map1 map2 = unirMaps (keys map1) map1 map2
 unirMaps ::Eq k => [k] -> Map k v -> Map k v -> Map k v
 -- Proposito: dada la lista de claves del primer mapa, agrego todas las asociasiones clave-valor de dicho mapa al segundo.
 unirMaps   []   map1 map2 = map2
-unirMaps (c:cs) map1 map2 = let v = fromJust (lookUpM c map1)
+unirMaps (c:cs) map1 map2 = let v = fromJust (lookupM c map1)
                                 in assocM c v (unirMaps cs map1 map2)
                             
-isEmptyM :: Map k v -> Bool
-isEmptyM map = length (keys map) == 0
-
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Propósito: dada una lista de elementos construye un map que relaciona cada elemento con
 --su posición en la lista.
 indexar :: [a] -> Map Int a
-indexar ls = indexarEn ls ls
+indexar ls = indexarEn 0 ls
 
 indexarEn :: Int -> [a] -> Map Int a
 indexarEn _   []   = emptyM
@@ -168,7 +165,7 @@ indexarEn n (x:xs) = assocM n x (indexarEn (n+1) xs)
 ocurrencias :: String -> Map Char Int
 ocurrencias  ''   = emptyM
 ocurrencias (c:cs)  = let map = ocurrencias cs
-                        in case lookUpM c map of
+                        in case lookupM c map of
                             Just v  -> assocM c (v+1) map
                             Nothing -> assocM c   1   map
 
