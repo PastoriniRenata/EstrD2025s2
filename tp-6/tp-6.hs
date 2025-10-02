@@ -22,13 +22,13 @@ heapSort :: Ord a => [a] -> [a]
 heapSort ls = pqALista (listaAPq ls)
 
 
-pqALista :: PriorityQueue a -> [a]
-pqALista pq = if isEmptyPq pq then []
-                              else findMinPQ pq : (pqALista (deleteMinPq pq))
+pqALista :: Ord a => PriorityQueue a -> [a]
+pqALista pq = if isEmptyPQ pq then []
+                              else findMinPQ pq : (pqALista (deleteMinPQ pq))
 
-listaAPq :: [a] -> PriorityQueue a 
+listaAPq :: Ord a => [a] -> PriorityQueue a 
 listaAPq   []   = emptyPQ
-listaAPq (x:xs) = insertPq x (listaAPq xs)
+listaAPq (x:xs) = insertPQ x (listaAPq xs)
 
 {-
 COSTO
@@ -44,7 +44,8 @@ listaAPq:
         donde se hace un paso recursivo por cada elemento de la lista ingresada por argumento
 
 -}
-
+-- >> heapSort [4,2,1,6,3,5,7,10,0,9,8]
+-- [0,1,2,3,4,5,6,7,8,9,10]
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -58,7 +59,7 @@ Implementar como usuario del tipo abstracto Map las siguientes funciones:
 valuesM :: Eq k => Map k v -> [Maybe v]
 valuesM map = losValores (keys map) map
 
-losValores :: Eq k => [k] -> Map k v 
+losValores :: Eq k => [k] -> Map k v  -> [Maybe v]
 losValores   []   map = []
 losValores (k:ks) map = (lookupM k map) : losValores ks map
 
@@ -71,7 +72,7 @@ losValores (k:ks) map = (lookupM k map) : losValores ks map
 --Propósito: indica si en el map se encuentran todas las claves dadas.
 todasAsociadas :: Eq k => [k] -> Map k v -> Bool
 todasAsociadas   []   map = True
-todasAsociadas (c:cs) map = case lookupM k map of
+todasAsociadas (c:cs) map = case lookupM c map of
                                 Just v  -> todasAsociadas cs map
                                 Nothing -> False
 
@@ -82,8 +83,8 @@ todasAsociadas (c:cs) map = case lookupM k map of
 --Propósito: convierte una lista de pares clave valor en un map.
 listToMap :: Eq k => [(k, v)] -> Map k v
 listToMap    []    = emptyM
-listToMap (cv:cvs) = let cv = (c,v)
-                        in assocM c v (listToMap cvs)
+listToMap (cv:cvs) = let (c,val) = cv
+                        in assocM c val (listToMap cvs)
 
 
 
@@ -95,9 +96,9 @@ listToMap (cv:cvs) = let cv = (c,v)
 mapToList :: Eq k => Map k v -> [(k, v)]
 mapToList map = tuplasClaveValor (keys map) map
 
-tuplasClaveValor :: [k] -> Map k v -> [(k, v)]
+tuplasClaveValor :: Eq k =>  [k] -> Map k v -> [(k, v)]
 tuplasClaveValor   []   map = []
-tuplasClaveValor (c:cs) map = let v = fromJust (lookupM c) map
+tuplasClaveValor (c:cs) map = let v = fromJust (lookupM c map)
                                  in (c, v) : tuplasClaveValor cs map
 
 fromJust :: Maybe v -> v
@@ -112,7 +113,7 @@ agruparEq :: Eq k => [(k, v)] -> Map k [v]
 agruparEq   []     = emptyM
 agruparEq (cv:cvs) = let (c,v) = cv
                          map = agruparEq cvs -- la recursión
-                            in case lookupM c map in
+                            in case lookupM c map of
                                 Just xs -> assocM c (v:xs) map
                                 Nothing -> assocM c [v] map
 
@@ -163,7 +164,7 @@ indexarEn n (x:xs) = assocM n x (indexarEn (n+1) xs)
 --Propósito: dado un string, devuelve un map donde las claves son los caracteres que aparecen
 --en el string, y los valores la cantidad de veces que aparecen en el mismo.
 ocurrencias :: String -> Map Char Int
-ocurrencias  ''   = emptyM
+ocurrencias  ""   = emptyM
 ocurrencias (c:cs)  = let map = ocurrencias cs
                         in case lookupM c map of
                             Just v  -> assocM c (v+1) map
@@ -214,7 +215,17 @@ lkv = [("a", "aa"), ("b", "bb"), ("c", "cc"), ("d", "dd"), ("e", "ee"), ("f", "f
 --        => con V3  --> M ["d","c","b","a","a","b","c","d"] [2,2,2,2,1,1,1,1] xq admite repetidos, entonces agrega los que quiero incrementar con su nuevo valor y los otros quedan olvidados al fondo del map
 
 -- >> incrementar lk m4
--- respuesta >> M [("d",2),("c",2),("a",2)]
+-- respuesta >> M [("a",2),("d",2),("c",2),("h",1),("g",1)]
+
+-- >>indexar ["a","b","c","d"]
+-- M [(3,"d"),(2,"c"),(1,"b"),(0,"a")]
+
+-- >> ocurrencias  "renata"
+-- M [('a',2),('t',1),('n',1),('e',1),('r',1)]
+
+-- >> ocurrencias  "aaaa"
+-- M [('a',4)]
+
 
 m6 :: Map String Int
 m6 = assocM "a" 2 (assocM "b" 2 (assocM "c" 2 (assocM "d" 2 emptyM)))
