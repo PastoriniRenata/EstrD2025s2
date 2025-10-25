@@ -45,51 +45,67 @@ void desdeCeroHastaN(int n){
 
 //---------------------------------------------------------------------------
 
-int multUnValorNegativo(int n, int m){
-    
-}
-
-int losDosPositivos(int n, int m, int res){
+int multPositivos(int n, int m){
     // precondicion: m>0 y n>0
-    if(m>1){
-        losDosPositivos(n, m-1, res+n);
-    }
+    return (m>1) ? n + multPositivos(n, m-1) : n;
 
-    return res;
 }
 
 int mult(int n, int m){
 //Propósito: realiza la multiplicación entre dos números (sin utilizar la operación * de C++).
 //el q voy a recorrer es el m
-    
-    if(n==0 or m==0){
-        return 0;
-    }elif(n>0 and m>0){
-        return losDosPositivos(n,m);
-    }elif(n>0 and m<0){
-        return 0
-    }elif(n<0 and m<0){
-        return - losDosPositivos(-n,-m);
-
-    }
-    
-    
+    return (n==0 or m==0) ? 0 : 
+                    (n>0 and m>0) ? multPositivos(n,m):
+                            (n<0 and m<0)? multPositivos(-n,-m):
+                                (n<0)? (- multPositivos(-n, m)): (- multPositivos(n, -m)) ;
 };
-/*
+
 //---------------------------------------------------------------------------
+
+
+void primerosNaux(int n,string s, int i){
+    if (i < n and  s[i] != '\0'){
+        cout << s[i] << endl ;
+        primerosNaux(n, s, i+1); 
+    };
+
+};
+
 
 void primerosN(int n, string s){
 //Propósito: imprime los primeros n char del string s, separados por un salto de línea.
+//Precondición: el string tiene al menos n char.
 
+    primerosNaux(n,s,0);
 };
+
+
 //---------------------------------------------------------------------------
 
-//Precondición: el string tiene al menos n char.
+
+bool pertenece2 (char c, string s, int i){
+    // bool esta = false;
+
+    // if(s[i] != '\0'){
+    //     esta = s[i] == c || pertenece2(c, s, i+1); 
+    // };
+
+    return s[i] != '\0' and (s[i] == c || pertenece2(c, s, i+1));
+};
+
 
 bool pertenece(char c, string s){
 //Propósito: indica si un char c aparece en el string s.
 
+    return pertenece2(c,s,0); 
+  
 };
+
+
+
+
+/*
+
 //---------------------------------------------------------------------------
 
 int apariciones(char c, string s){

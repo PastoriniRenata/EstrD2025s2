@@ -25,7 +25,20 @@ int main(){
 
     desdeCeroHastaN(4);
     cout<<"---------------------------------------------------------------------------"<<endl;
+    int x = 4;
+    int y = 8;
+    cout << "La multiplicacion entre " << x << " y " << y << " es: " << x*y << " y tu codigo indica: " << mult(x, y) << endl;
+    
+    cout<<"---------------------------------------------------------------------------"<<endl;
 
+    primerosN(3, "hola");
+
+    cout<<"---------------------------------------------------------------------------"<<endl;
+    char c = 'x';
+    string s = "hola";
+    cout << "El char " << c << ((pertenece(c,s))? " SI " : " NO ") << "pertenece al string " << s << endl;
+
+    cout<<"---------------------------------------------------------------------------"<<endl;
 
 
     return 0;
