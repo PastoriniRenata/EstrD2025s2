@@ -104,12 +104,15 @@ bool pertenece(char c, string s){
 
 
 
-/*
+
 
 //---------------------------------------------------------------------------
 
+int aparicionesAux(char c, string s, int i){
+    return (s[i]=='\0')? 0 : ((s[i] == c) ? 1 : 0) + aparicionesAux(c,s, i+1);
+};
+
 int apariciones(char c, string s){
 //Propósito: devuelve la cantidad de apariciones de un char c en el string s.
-
+    return aparicionesAux(c,s,0);
 };
-*/

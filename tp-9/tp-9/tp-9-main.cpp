@@ -34,9 +34,13 @@ int main(){
     primerosN(3, "hola");
 
     cout<<"---------------------------------------------------------------------------"<<endl;
-    char c = 'x';
-    string s = "hola";
+    char c = 'a';
+    string s = "Renata";
     cout << "El char " << c << ((pertenece(c,s))? " SI " : " NO ") << "pertenece al string " << s << endl;
+
+    cout<<"---------------------------------------------------------------------------"<<endl;
+
+    cout << "Hay un total de " << apariciones(c,s) << " apariciones del char '" << c << "' en el string " << s << endl;
 
     cout<<"---------------------------------------------------------------------------"<<endl;
 

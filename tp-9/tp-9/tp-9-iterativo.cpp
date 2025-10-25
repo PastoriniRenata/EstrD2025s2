@@ -90,10 +90,18 @@ bool pertenece(char c, string s){
     return s[i] != '\0';
 };
 
-/*
+
 
 int apariciones(char c, string s){
 //Propósito: devuelve la cantidad de apariciones de un char c en el string s.
+    
+    int apariciones = 0;
 
+    for(int i =0; s[i]!= '\0'; i++){
+        if(s[i] ==c){
+            apariciones += 1;
+        }
+    }
+    
+    return apariciones;
 };
-*/
