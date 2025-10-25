@@ -1,0 +1,58 @@
+
+#include <iostream>
+using namespace std;
+#include "Par.h"
+
+/*
+Ejercicio 3
+Dada la estructura de pares representada como struct en C++, definir las siguientes funciones
+sobre pares. Recordar probar las implementaciones en un procedimiento main.
+*/
+
+
+// Propósito: construye un par
+Par consPar(int x, int y){
+    Par unPar;
+
+    unPar.x = x;
+    unPar.y = y;
+
+    return unPar;
+
+}
+
+// Propósito: devuelve la primera componente
+int fst(Par p){
+    return p.x;
+}
+
+// Propósito: devuelve la segunda componente
+int snd(Par p){
+    return p.y;
+}
+
+// Propósito: devuelve la mayor componente
+int maxDelPar(Par p){
+    return (p.x > p.y) ? p.x:p.y;
+}
+
+// Propósito: devuelve un par con las componentes intercambiadas
+Par swap(Par p){
+    Par unPar;
+
+    unPar.x = p.y;
+    unPar.y = p.x;
+
+    return unPar;
+}
+
+
+// Propósito: devuelve un par donde la primer componente
+// es la división y la segunda el resto entre ambos números
+Par divisionYResto(int n, int m){
+    Par unPar;
+    unPar.x = n / m;
+    unPar.y = n % m;
+    return unPar;
+}
+
