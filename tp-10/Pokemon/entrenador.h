@@ -2,12 +2,7 @@
 using namespace std;
 #include "pokemon.h"
 
-struct EntrenadorSt {
-    string nombre;
-    Pokemon* pokemon; //un arreglo de pokemones 
-    int cantPokemon;
-};
-
+struct EntrenadorSt;
 typedef EntrenadorSt* Entrenador;
 
 

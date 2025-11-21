@@ -3,7 +3,10 @@ using namespace std;
 #include "persona.h"
 
 
-
+struct PersonaSt{
+    string nombre;
+    int edad;
+};
 
 Persona consPersona(string nombre, int edad){
 //Devuelve a una persona nueva, con el nombre y la edad dados

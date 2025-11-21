@@ -3,6 +3,14 @@
 using namespace std;
 #include "Par.h"
 
+struct Par {
+    int x;
+    int y;
+};
+
+typedef struct Par Par;
+
+
 /*
 Ejercicio 3
 Dada la estructura de pares representada como struct en C++, definir las siguientes funciones

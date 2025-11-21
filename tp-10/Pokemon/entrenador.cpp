@@ -2,6 +2,11 @@
 using namespace std;
 #include "entrenador.h"
 
+struct EntrenadorSt {
+    string nombre;
+    Pokemon* pokemon; //un arreglo de pokemones 
+    int cantPokemon;
+};
 
 
 //Una vez hecho eso, implementar la siguiente interfaz de Entrenador:

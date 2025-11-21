@@ -6,10 +6,7 @@ using namespace std;
 //sobre fracciones. Recordar probar las implementaciones en un procedimiento main.
 
 
-struct Fraccion {
-    int numerador;
-    int denominador;
-};
+struct Fraccion ;
 // Propósito: construye una fraccion
 // Precondición: el denominador no es cero
 Fraccion consFraccion(int numerador, int denominador);

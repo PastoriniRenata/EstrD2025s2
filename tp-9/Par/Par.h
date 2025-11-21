@@ -5,13 +5,7 @@ sobre pares. Recordar probar las implementaciones en un procedimiento main.
 */
 
 
-struct Par {
-    int x;
-    int y;
-};
-
-typedef struct Par Par;
-
+struct Par;
 // Propósito: construye un par
 Par consPar(int x, int y);
 // Propósito: devuelve la primera componente

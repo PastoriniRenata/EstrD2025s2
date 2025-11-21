@@ -4,11 +4,7 @@ using namespace std;
 
 typedef string TipoDePokemon;
 
-struct PokeSt{
-    TipoDePokemon tipo;
-    int vida;
-};
-
+struct PokeSt;
 typedef PokeSt* Pokemon;
 
 

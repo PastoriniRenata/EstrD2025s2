@@ -3,6 +3,11 @@ using namespace std;
 #include "fracciones.h"
 
 
+struct Fraccion {
+    int numerador;
+    int denominador;
+};
+
 
 // Propósito: construye una fraccion
 // Precondición: el denominador no es cero
